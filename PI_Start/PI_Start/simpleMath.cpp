@@ -50,3 +50,5 @@ void projection(double *u, double *v, double *res, int dim){
         res[i] = u[i] * scalar;
     }
 }
+
+
