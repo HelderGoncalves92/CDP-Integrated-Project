@@ -1,4 +1,5 @@
 //NOTA: Esta a receber k como se fosse k-j e assume-se que j=0
+//Algoritmo em http://www.csie.nuk.edu.tw/~cychen/Lattices/Lattice%20Basis%20Reduction_%20Improved%20Practical%20Algorithms%20and%20Solving%20Subset%20Sum%20Problems.pdf - pagina 16
 
 /*Retorna algo*/ ENUM(double* b[], double c[], double* mu[], int k){
 	double cL, cT[k+1], y[k+1], v[k+1];
