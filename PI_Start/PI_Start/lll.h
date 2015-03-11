@@ -11,6 +11,7 @@
 
 #include "simpleMath.h"
 
+void lll(double* base[], int delta, int dimVector, int numVector);
 
 
 #endif /* defined(__PI_Start__lll__) */
