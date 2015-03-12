@@ -14,7 +14,7 @@ bool passvec(double v[]){
 
 double** BKZ(double *bases[], double *u[], double *c[], int beta, double delta){
 	int z = 0, j = 0, k, h, alt1, alt2, i, l;
-	double v[N];
+	double v[N], vaux[N];
 	double aux[][];
 	LLL(&bases, delta);
 	while (z < N - 1){
@@ -22,7 +22,10 @@ double** BKZ(double *bases[], double *u[], double *c[], int beta, double delta){
 		k = min(j + beta - 1, N);
 		h = min(k + 1, n);
 		//cria nova matriz de ortogonalizacao para enviar para o ENUM
-		//v = ENUM();
+		for (i = 0; i < N; i++){
+			vaux[i] = vectorNorm(&bases[i],2);
+		}
+		v = ENUM();
 		if (!passvec(v))
 		{
 			z = 0;
@@ -30,7 +33,7 @@ double** BKZ(double *bases[], double *u[], double *c[], int beta, double delta){
 			alt1 = k - j;
 			for(alt2 = h; alt>j-1; alt2--){
 				for(i = 0; i < N; i++){
-					bases[alt2+alt1][i] = bases[alt2];
+					bases[alt2+alt1][i] = bases[alt2][i];
 				}
 			}
 			for(alt2 = j; alt2 <= k ; alt2++){

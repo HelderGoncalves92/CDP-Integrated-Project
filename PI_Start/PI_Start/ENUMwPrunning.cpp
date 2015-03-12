@@ -27,7 +27,7 @@ double* EnumWPrun (int n, double* mu[], double b[]){
 	}
 
 	while(true){
-		dist[i] = dist[i+1] + (u[i] - c[i])^2 * b[i];
+		dist[i] = dist[i+1] + pow((u[i] - c[i]),2) * b[i];
 		if(dist[i] < C){
 			if(i != 0){
 				//move down
