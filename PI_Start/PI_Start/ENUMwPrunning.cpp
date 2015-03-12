@@ -1,3 +1,5 @@
+#include "ENUMwPrunning.h"
+
 double* EnumWPrun (int n, double* mu[], double b[]){
 	double C = b[0];
 	//O i começa a 0 pois e o primeiro indice
@@ -30,7 +32,7 @@ double* EnumWPrun (int n, double* mu[], double b[]){
 			if(i != 0){
 				//move down
 				i--;
-				d[i - 1] = max(d[i - 1], d[i]);
+				d[i - 1] = fmax(d[i - 1], d[i]);
 				for(j = d[i]; j <= i+1; j--){
 					e[j][i] = e[j+1][i] + u[j] * mu[j][i];
 				}

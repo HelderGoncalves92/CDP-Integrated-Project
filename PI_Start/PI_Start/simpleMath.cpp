@@ -16,7 +16,7 @@ double vectorNorm(double *v, int dim){
     for(i=0; i<dim; i++)
         res += pow(v[i], 2);
     
-    return ( res/dim );
+    return sqrt(res);
 }
 
 void normalizeVector(double *v, int dim){

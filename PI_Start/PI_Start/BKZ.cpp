@@ -1,6 +1,7 @@
 //N = Dimensao, por enquanto definida globalmente para simplificar
 #define N  2;
 
+#include "BKZ.h"
 
 bool passvec(double v[]){
 	int i;
@@ -11,11 +12,11 @@ bool passvec(double v[]){
 	return true;
 }
 
-double** BKZ(double *bases[], double *u[], double *c[], int beta, double d){
+double** BKZ(double *bases[], double *u[], double *c[], int beta, double delta){
 	int z = 0, j = 0, k, h, alt1, alt2, i, l;
 	double v[N];
 	double aux[][];
-	LLL(&bases, d);
+	LLL(&bases, delta);
 	while (z < N - 1){
 		j = (j * mod(N-1)) + 1; 
 		k = min(j + beta - 1, N);
@@ -38,11 +39,11 @@ double** BKZ(double *bases[], double *u[], double *c[], int beta, double d){
 				}
 			}
 			/*Chama LLL com a nova matriz*/
-			LLL(&bases, d);
+			LLL(&bases, delta);
 		}else{
 			z++;
 			/*chama LLL com a matriz actual*/
-			LLL(&bases, d);
+			LLL(&bases, delta);
 		}
 	}
 	return bases;
