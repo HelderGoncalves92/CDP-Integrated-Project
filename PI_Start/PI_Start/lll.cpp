@@ -100,7 +100,7 @@ void sizeReduction(double* base[], double* coeffs[], int k){
 }
 
 //Algorithm 2 - Lenstra–Lenstra–Lovász
-void lll(double* base[], int delta, int dimVector, int numVector){
+void lll(double* base[], int delta){
     
     int i, k=1, kl;
     double **baseORT, **coeffs, *norms;

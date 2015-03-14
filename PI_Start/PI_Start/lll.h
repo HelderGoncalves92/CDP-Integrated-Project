@@ -14,7 +14,7 @@
 int dimVector;
 int numVector;
 
-void lll(double* base[], int delta, int dimVector, int numVector);
+void lll(double* base[], int delta);
 
 
 #endif /* defined(__PI_Start__lll__) */
