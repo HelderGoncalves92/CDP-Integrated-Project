@@ -11,6 +11,9 @@
 
 #include "simpleMath.h"
 
+int dimVector;
+int numVector;
+
 void lll(double* base[], int delta, int dimVector, int numVector);
 
 
