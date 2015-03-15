@@ -1,6 +1,7 @@
 //N = Dimensao, por enquanto definida globalmente para simplificar
 #define N  2;
 
+#include "BKZ.h"
 
 bool passvec(double v[]){
 	int i;
@@ -11,17 +12,20 @@ bool passvec(double v[]){
 	return true;
 }
 
-double** BKZ(double *bases[], double *u[], double *c[], int beta, double d){
+double** BKZ(double *bases[], double *u[], double *c[], int beta, double delta){
 	int z = 0, j = 0, k, h, alt1, alt2, i, l;
-	double v[N];
+	double v[N], vaux[N];
 	double aux[][];
-	LLL(&bases, d);
+	LLL(&bases, delta);
 	while (z < N - 1){
 		j = (j * mod(N-1)) + 1; 
 		k = min(j + beta - 1, N);
 		h = min(k + 1, n);
 		//cria nova matriz de ortogonalizacao para enviar para o ENUM
-		//v = ENUM();
+		for (i = 0; i < N; i++){
+			vaux[i] = vectorNorm(&bases[i],2);
+		}
+		v = ENUM();
 		if (!passvec(v))
 		{
 			z = 0;
@@ -29,7 +33,7 @@ double** BKZ(double *bases[], double *u[], double *c[], int beta, double d){
 			alt1 = k - j;
 			for(alt2 = h; alt>j-1; alt2--){
 				for(i = 0; i < N; i++){
-					bases[alt2+alt1][i] = bases[alt2];
+					bases[alt2+alt1][i] = bases[alt2][i];
 				}
 			}
 			for(alt2 = j; alt2 <= k ; alt2++){
@@ -38,11 +42,11 @@ double** BKZ(double *bases[], double *u[], double *c[], int beta, double d){
 				}
 			}
 			/*Chama LLL com a nova matriz*/
-			LLL(&bases, d);
+			LLL(&bases, delta);
 		}else{
 			z++;
 			/*chama LLL com a matriz actual*/
-			LLL(&bases, d);
+			LLL(&bases, delta);
 		}
 	}
 	return bases;

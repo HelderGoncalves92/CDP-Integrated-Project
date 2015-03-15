@@ -15,7 +15,7 @@ double vectorNorm(double *v, int dim){
     
     for(i=0; i<dim; i++)
         res += pow(v[i], 2);
-    
+
     return  sqrt(res);
 }
 
