@@ -3,7 +3,7 @@
 
 #include "math.h"
 
-/*Retorna algo*/ ENUM(double* b[], double c[], double* mu[], int k){
+double* ENUM(double* b[], double c[], double* mu[], int k){
 	double cL, cT[k+1], y[k+1], v[k+1];
 	int delta[k+1], s = 0, t = 0, d[k+1], i, h;
 	int u[k+1], uT[k+1];

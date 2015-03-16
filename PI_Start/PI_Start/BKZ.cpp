@@ -13,14 +13,17 @@ bool passvec(double v[]){
 }
 
 double** BKZ(double *bases[], double *u[], double *c[], int beta, double delta){
-	int z = 0, j = 0, k, h, alt1, alt2, i, l;
+	int k, h, i, l;
 	double v[N], vaux[N];
-	double aux[][];
-	LLL(&bases, delta);
+	double* aux;
+
+	int z = 0, j = 0;
+
+	lll(&bases, delta);
 	while (z < N - 1){
 		j = (j * mod(N-1)) + 1; 
 		k = min(j + beta - 1, N);
-		h = min(k + 1, n);
+		h = min(k + 1, N);
 		//cria nova matriz de ortogonalizacao para enviar para o ENUM
 		for (i = 0; i < N; i++){
 			vaux[i] = vectorNorm(&bases[i],2);
@@ -30,23 +33,22 @@ double** BKZ(double *bases[], double *u[], double *c[], int beta, double delta){
 		{
 			z = 0;
 			/*Transforma a matriz para a enviar*/
-			alt1 = k - j;
-			for(alt2 = h; alt>j-1; alt2--){
-				for(i = 0; i < N; i++){
-					bases[alt2+alt1][i] = bases[alt2][i];
-				}
+			/*Faz shift das bases a direita da que vai ser inserida*/
+			for (i = N - 1; i >= j - 1; i++){
+				bases[i + 1] = bases[i];
 			}
-			for(alt2 = j; alt2 <= k ; alt2++){
-				for(i = 0; i < N; i++){
-					bases[alt2][i] *= v[alt2];
-				}
+			/*Insere nova base*/
+			for (i = 0; i < N; i++){
+				/*DUVIDA - Qual a base a ser inserida*/
+				bases[j - 1][i] = v[i]
 			}
+
 			/*Chama LLL com a nova matriz*/
-			LLL(&bases, delta);
+			lll(&bases, delta);
 		}else{
 			z++;
 			/*chama LLL com a matriz actual*/
-			LLL(&bases, delta);
+			lll(&bases, delta);
 		}
 	}
 	return bases;
