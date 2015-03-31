@@ -11,10 +11,14 @@
 
 #include "simpleMath.h"
 
-int dimVector;
-int numVector;
+extern int dimVector;
+extern int numVector;
 
-void lll(double* base[], int delta);
+
+void shiftVector(double** base, int k, int kl);
+void initStructsLLL(double** base, int rows, int cols);
+void lll(double** base, int delta, int indiceMax);
+
 
 
 #endif /* defined(__PI_Start__lll__) */

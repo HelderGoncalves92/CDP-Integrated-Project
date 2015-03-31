@@ -8,10 +8,20 @@
 
 #include "lll.h"
 
+double **baseORT;
+double **coeffs;
+double *norms;
+double *projAux;
 
-void allocateMemory(double *base[], double *baseORT[], double* coeffs[], double* norms, int dimVector, int numVector){
+//Use (double **base, double **baseORT, double** coeffs, double* norms)
+void initStructsLLL(double** base, int rows, int cols){
     int i;
     
+    //Set size variables
+    numVector = rows;
+    dimVector = cols;
+    
+    //Allocate all necessary memory
     baseORT = (double**)malloc(numVector*sizeof(double*));
     coeffs = (double**)malloc(numVector*sizeof(double*));
     
@@ -19,17 +29,42 @@ void allocateMemory(double *base[], double *baseORT[], double* coeffs[], double*
         
         //Base Orthogonal
         baseORT[i] = (double*)malloc(dimVector*sizeof(double));
-        memccpy(baseORT[i], base[i], dimVector, sizeof(double));
-        
         coeffs[i] = (double*)malloc(dimVector*sizeof(double));
     }
     
     norms = (double*)malloc(dimVector*sizeof(double));
+    projAux = (double*)malloc(dimVector*sizeof(double));
 }
 
 
+void prepareBaseORT(double** base, int num){
+    int i;
+    
+    for(i=0; i<num; i++)
+        memccpy(baseORT[i], base[i], dimVector, sizeof(double));
+}
 
-void coefficientsGS(double *base[], double *baseORT[], double* coeffs[],double* norms){
+
+void shiftVector(double** base, int k, int kl){
+    
+    int i;
+    double *aux, *aux2;
+    
+    //insert B[kl] right before B[k]
+    aux=base[k+1];
+    base[k+1]=base[kl];
+    
+    
+    //Correct the other pointers
+    for (i=k+2; i<=kl; i++) {
+        aux2 = base[k];
+        base[k] = aux;
+        aux = aux2;
+    }
+}
+
+//Use (double *base[], double *baseORT[], double* coeffs[], double* norms)
+void coefficientsGS(double *base[]){
     
     int i, j;
     
@@ -37,7 +72,6 @@ void coefficientsGS(double *base[], double *baseORT[], double* coeffs[],double* 
         for (j=i-1; j>=0; j--) {
             coeffs[i][j]= innerProduct(&base[i][0], &baseORT[j][0], dimVector) / innerProduct(&baseORT[j][0], &baseORT[j][0], dimVector);
         }
-        
     }
     
     for (i=0; i<dimVector; i++) {
@@ -46,12 +80,10 @@ void coefficientsGS(double *base[], double *baseORT[], double* coeffs[],double* 
 }
 
 
-void gram_Schmidt_Orthonormalization(double* base[], double* baseORT[]){
+//Use (double* base[], double* baseORT[])
+void gram_Schmidt_Orthonormalization(double* base[]){
     
     int i, k, j;
-    
-    //Allocate Auxmemory
-    double *projAux = (double*)malloc(dimVector*sizeof(double));
     
     for(k=0; k<numVector; k++){
         
@@ -66,10 +98,9 @@ void gram_Schmidt_Orthonormalization(double* base[], double* baseORT[]){
             
         }
     }
-    free(projAux);
 }
 
-double breakCondition_Alg2(double **coeffs, double* norms, int k, int kl){
+double breakCondition_Alg2(int k, int kl){
     
     int i;
     double res=norms[kl];
@@ -84,13 +115,13 @@ double breakCondition_Alg2(double **coeffs, double* norms, int k, int kl){
 
 
 //Algorithm 1
-void sizeReduction(double* base[], double* coeffs[], int k){
+void sizeReduction(int k){
     int i, j;
     
     for(i=k-1; i>=0; i--){
         
         for(j=0; j<dimVector; j++){
-            base[k][j] -= round(coeffs[k][i]) * base[i][j];
+            baseORT[k][j] -= round(coeffs[k][i]) * baseORT[i][j];
         }
         
         for(j=0; j<i; j++){
@@ -100,27 +131,24 @@ void sizeReduction(double* base[], double* coeffs[], int k){
 }
 
 //Algorithm 2 - Lenstra–Lenstra–Lovász
-void lll(double* base[], int delta){
+void lll(double* base[], int delta, int indiceMax){
     
     int i, k=1, kl;
-    double **baseORT, **coeffs, *norms;
-    double *aux, *aux2;
     
-    
-    //Initializate data structs
-    allocateMemory(base, baseORT, coeffs, norms, dimVector, numVector);
+    numVector = indiceMax;
+    prepareBaseORT(base, numVector);
     
     //Compute orthogonal basis, Coefficients, norms
-    gram_Schmidt_Orthonormalization(base, baseORT);
-    coefficientsGS(base, baseORT, coeffs, norms);
+    gram_Schmidt_Orthonormalization(base);
+    coefficientsGS(base);
     
     while(k<numVector){
         //sizeResuction and Update the Coeffs and norms
-        sizeReduction(baseORT, coeffs, k);
-        coefficientsGS(base, baseORT, coeffs, norms);
+        sizeReduction(k);
+        coefficientsGS(base);
 
         kl=k;
-        while(k>=1 && (delta*norms[k-1] > breakCondition_Alg2(coeffs, norms, k, kl)) ){
+        while(k>=1 && (delta*norms[k-1] > breakCondition_Alg2(k, kl)) ){
             k--;
         }
         
@@ -128,21 +156,11 @@ void lll(double* base[], int delta){
             coeffs[k][i] = coeffs[kl][i];
         }
         
-        
-        //insert B[kl] right before B[k]
-        aux=base[k+1];
-        base[k+1]=base[kl];
-        
-        //Correct the other pointers
-        for (i=k+2; i<=kl; i++) {
-            aux2 = base[k];
-            base[k] = aux;
-            aux = aux2;
-        }
+        //Shift vectors
+        shiftVector(base, k, kl);
         
         k++;
     }
-    
 }
 
 

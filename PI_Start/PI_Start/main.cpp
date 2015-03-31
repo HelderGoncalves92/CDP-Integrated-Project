@@ -17,15 +17,17 @@
 #include <fstream>
 #include "lll.h"
 
-extern int dimVector;
-extern int numVector;
+using namespace std;
+
+int dimVector;
+int numVector;
 
 
 
 
-void MatIntFromMatZZ(long** A, NTL::mat_ZZ B) {
+void MatIntFromMatZZ(double** A, NTL::mat_ZZ B) {
     
-    int row,col, rows = B.NumRows(),cols= B.NumCols();
+    int row,col, rows = B.NumRows(), cols= B.NumCols();
     
     for (row = 0; row < rows; ++row) {
         for (col = 0; col < cols; ++col) {
@@ -40,6 +42,8 @@ int main(int argc, const char * argv[]) {
     
     NTL::mat_ZZ B;
     std::ifstream input_file(argv[1]);
+    
+    //Try to read Base file
     if (input_file.is_open()) {
         input_file >> B;
         input_file.close();
@@ -53,16 +57,24 @@ int main(int argc, const char * argv[]) {
     NTL::G_BKZ_FP(B, 0.99, 10 );
     NTL::G_LLL_FP(B,0.99);
     
-    
+    //Basis Matrix - Memory Allocation
     int rows = B.NumRows(), cols= B.NumCols(), i;
-    long** B_ = (long**)malloc(B.NumCols()*sizeof(long*));
+    double** B_ = (double**)malloc((rows+1) *sizeof(double*));
     
-    for(int row = 0; row < rows; row++)
-        B_[row] = (long*)malloc(B.NumRows()*sizeof(long));
+    for(int row = 0; row < rows+1; row++)
+        B_[row] = (double*)malloc(cols*sizeof(double));
     
     
+    //Convert ZZ data to double
     MatIntFromMatZZ(B_, B);
     
     
+    //Init lll Structs
+    initStructsLLL(B_, rows, cols);
+    
+    lll(B_, 0.99, rows);
+    
+    
+    cout << "Finish" << endl;
     return 0;
 }
