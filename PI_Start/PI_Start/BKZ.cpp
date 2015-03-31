@@ -3,32 +3,28 @@
 
 #include "BKZ.h"
 
-bool passvec(double v[]){
+bool passvec(double v[], int index){
 	int i;
-	if (v[0]!=1){return false;}
-	for(i = 1; i < N; i++){
+	for(i = 0; i < N; i++){
 		if (v[i] != 0) return false;
 	}
 	return true;
 }
 
-double** BKZ(double *bases[], double *u[], double *c[], int beta, double delta){
+double** BKZ(double *bases[], double *mu[], double *c[], int beta, double delta){
 	int k, h, i, l;
 	double v[N], vaux[N];
 	double* aux;
 
-	int z = 0, j = 1;
+	int z = 0, j = 0;
 
-	lll(&bases, delta);
+	lll(&bases, delta, N-1);
 	while (z < N - 1){
 		j = (j * mod(N-1)) + 1; 
 		k = min(j + beta - 1, N);
 		h = min(k + 1, N);
-		////cria nova matriz de ortogonalizacao para enviar para o ENUM
-		//for (i = 0; i < N; i++){
-		//	vaux[i] = vectorNorm(&bases[i],2);
-		//}
-		v = ENUM();
+		
+		v = ENUM(u,c,j-1,k-1);
 		if (!passvec(v))
 		{
 			z = 0;
@@ -44,11 +40,11 @@ double** BKZ(double *bases[], double *u[], double *c[], int beta, double delta){
 			}
 
 			/*Chama LLL com a nova matriz*/
-			lll(&bases, delta);
+			lll(&bases, delta, h-1);
 		}else{
 			z++;
 			/*chama LLL com a matriz actual*/
-			lll(&bases, delta);
+			lll(&bases, delta, h-1);
 		}
 	}
 	return bases;
