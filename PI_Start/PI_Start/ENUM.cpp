@@ -22,7 +22,7 @@ double* ENUM(double* b[], double c[], double* mu[], int k){
 	}
 
 	while(t <= k){
-		cT[t] = cT[t+1] + (y[t] + uT[t])^2 * c[t];
+		cT[t] = cT[t+1] + pow(y[t] + uT[t],2) * c[t];
 		if(cT[t] < cL){
 			if(t > 0){
 				t--;

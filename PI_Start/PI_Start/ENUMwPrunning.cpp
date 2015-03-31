@@ -48,7 +48,7 @@ double* EnumWPrun (int n, double* mu[], double b[]){
 				}
 			}
 		}else{
-			if(i = n){
+			if(i == n){
 				return uL;
 			}
 			//move up
