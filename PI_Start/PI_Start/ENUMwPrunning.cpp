@@ -1,11 +1,13 @@
+#include "ENUMwPrunning.h"
+
 double* EnumWPrun (int n, double* mu[], double b[]){
 	double C = b[0];
 	//O i começa a 0 pois e o primeiro indice
 	int i = 0, j, k;
 	double dist[n+1], c[n];
-	double e[n+1][n];
+	double E[n+1][n];
 	int delta[n], d[n], u[n], uL[n];
-	int last_nonzero = 1;
+	int last_nonzero = 0;
 
 	u[0] = uL[0] = 1;
 
@@ -20,21 +22,22 @@ double* EnumWPrun (int n, double* mu[], double b[]){
 	}
 	for(j = 0; j < n + 1; j++){
 		for(k = 0; k < n; k++){
-			e[j][k] = 0;
+			E[j][k] = 0;
 		}
+		dist[j] = 0;
 	}
 
 	while(true){
-		dist[i] = dist[i+1] + (u[i] - c[i])^2 * b[i];
+		dist[i] = dist[i+1] + pow((u[i] - c[i]),2) * b[i];
 		if(dist[i] < C){
 			if(i != 0){
 				//move down
 				i--;
-				d[i - 1] = max(d[i - 1], d[i]);
+				d[i - 1] = fmax(d[i - 1], d[i]);
 				for(j = d[i]; j <= i+1; j--){
-					e[j][i] = e[j+1][i] + u[j] * mu[j][i];
+					E[j][i] = E[j+1][i] + u[j] * mu[j][i];
 				}
-				c[i] = -e[i+1][i];
+				c[i] = -E[i+1][i];
 				u[i] = round(c[i]);
 				delta[i] = 1;
 			}else{

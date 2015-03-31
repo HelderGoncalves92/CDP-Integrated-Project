@@ -1,48 +1,50 @@
 //N = Dimensao, por enquanto definida globalmente para simplificar
 #define N  2;
 
+#include "BKZ.h"
 
-bool passvec(double v[]){
+bool passvec(double v[], int index){
 	int i;
-	if (v[0]!=1){return false;}
-	for(i = 1; i < N; i++){
+	for(i = 0; i < N; i++){
 		if (v[i] != 0) return false;
 	}
 	return true;
 }
 
-double** BKZ(double *bases[], double *u[], double *c[], int beta, double d){
-	int z = 0, j = 0, k, h, alt1, alt2, i, l;
-	double v[N];
-	double aux[][];
-	LLL(&bases, d);
+double** BKZ(double *bases[], double *mu[], double *c[], int beta, double delta){
+	int k, h, i, l;
+	double v[N], vaux[N];
+	double* aux;
+
+	int z = 0, j = 0;
+
+	lll(&bases, delta, N-1);
 	while (z < N - 1){
 		j = (j * mod(N-1)) + 1; 
 		k = min(j + beta - 1, N);
-		h = min(k + 1, n);
-		//cria nova matriz de ortogonalizacao para enviar para o ENUM
-		//v = ENUM();
+		h = min(k + 1, N);
+		
+		v = ENUM(u,c,j-1,k-1);
 		if (!passvec(v))
 		{
 			z = 0;
 			/*Transforma a matriz para a enviar*/
-			alt1 = k - j;
-			for(alt2 = h; alt>j-1; alt2--){
-				for(i = 0; i < N; i++){
-					bases[alt2+alt1][i] = bases[alt2];
-				}
+			/*Faz shift das bases a direita da que vai ser inserida*/
+			for (i = N - 1; i >= j - 1; i++){
+				bases[i + 1] = bases[i];
 			}
-			for(alt2 = j; alt2 <= k ; alt2++){
-				for(i = 0; i < N; i++){
-					bases[alt2][i] *= v[alt2];
-				}
+			/*Insere nova base*/
+			for (i = 0; i < N; i++){
+				/*DUVIDA - Qual a base a ser inserida*/
+				bases[j - 1][i] = v[i]
 			}
+
 			/*Chama LLL com a nova matriz*/
-			LLL(&bases, d);
+			lll(&bases, delta, h-1);
 		}else{
 			z++;
 			/*chama LLL com a matriz actual*/
-			LLL(&bases, d);
+			lll(&bases, delta, h-1);
 		}
 	}
 	return bases;

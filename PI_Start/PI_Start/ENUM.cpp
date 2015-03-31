@@ -1,7 +1,9 @@
 //NOTA: Esta a receber k como se fosse k-j e assume-se que j=0
 //Algoritmo em http://www.csie.nuk.edu.tw/~cychen/Lattices/Lattice%20Basis%20Reduction_%20Improved%20Practical%20Algorithms%20and%20Solving%20Subset%20Sum%20Problems.pdf - pagina 16
 
-/*Retorna algo*/ ENUM(double* b[], double c[], double* mu[], int k){
+#include "math.h"
+
+double* ENUM(double* b[], double c[], double* mu[], int k){
 	double cL, cT[k+1], y[k+1], v[k+1];
 	int delta[k+1], s = 0, t = 0, d[k+1], i, h;
 	int u[k+1], uT[k+1];
@@ -37,7 +39,7 @@
 				}
 			}else{
 				t++;
-				s = max(s,t);
+				s = fmax(s,t);
 				if(t < s){
 					delta[t] = -delta[t];
 				}
@@ -57,10 +59,12 @@
 		for(h = i; h < k; h++){
 			aux2 += u[h], mu[h][i];
 		}
-		aux2 = aux2^2;
+		aux2 = pow(aux2,2);
 		aux += aux2;
 	}
 	//Supostamente retorna este valor mais um tal "minimal place" que nao tou bem a ver o que e
-	retval = min(bnew, aux);
+	retval = fmin(bnew, aux);
+
+	return retval;
 }
 
