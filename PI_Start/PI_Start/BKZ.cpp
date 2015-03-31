@@ -17,17 +17,17 @@ double** BKZ(double *bases[], double *u[], double *c[], int beta, double delta){
 	double v[N], vaux[N];
 	double* aux;
 
-	int z = 0, j = 0;
+	int z = 0, j = 1;
 
 	lll(&bases, delta);
 	while (z < N - 1){
 		j = (j * mod(N-1)) + 1; 
 		k = min(j + beta - 1, N);
 		h = min(k + 1, N);
-		//cria nova matriz de ortogonalizacao para enviar para o ENUM
-		for (i = 0; i < N; i++){
-			vaux[i] = vectorNorm(&bases[i],2);
-		}
+		////cria nova matriz de ortogonalizacao para enviar para o ENUM
+		//for (i = 0; i < N; i++){
+		//	vaux[i] = vectorNorm(&bases[i],2);
+		//}
 		v = ENUM();
 		if (!passvec(v))
 		{
