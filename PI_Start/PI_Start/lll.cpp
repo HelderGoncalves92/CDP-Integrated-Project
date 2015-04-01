@@ -22,18 +22,19 @@ void initStructsLLL(double** base, int rows, int cols){
     dimVector = cols;
     
     //Allocate all necessary memory
-    baseORT = (double**)malloc(numVector*sizeof(double*));
-    coeffs = (double**)malloc(numVector*sizeof(double*));
+    baseORT = (double**)_mm_malloc(numVector*sizeof(double*),64);
+    coeffs = (double**)_mm_malloc(numVector*sizeof(double*),64);
     
     for(i=0; i<numVector; i++){
         
         //Base Orthogonal
-        baseORT[i] = (double*)malloc(dimVector*sizeof(double));
-        coeffs[i] = (double*)malloc(dimVector*sizeof(double));
+        baseORT[i] = (double*)_mm_malloc(dimVector*sizeof(double),64);
+        coeffs[i] = (double*)_mm_malloc(dimVector*sizeof(double),64);
     }
     
-    norms = (double*)malloc(dimVector*sizeof(double));
-    projAux = (double*)malloc(dimVector*sizeof(double));
+    norms = (double*)_mm_malloc(dimVector*sizeof(double),64);
+    projAux = (double*)_mm_malloc(dimVector*sizeof(double),64);
+    
 }
 
 
@@ -131,7 +132,7 @@ void sizeReduction(int k){
 }
 
 //Algorithm 2 - Lenstra–Lenstra–Lovász
-void lll(double* base[], int delta, int indiceMax){
+void lll(double* base[], double delta, int indiceMax){
     
     int i, k=1, kl;
     

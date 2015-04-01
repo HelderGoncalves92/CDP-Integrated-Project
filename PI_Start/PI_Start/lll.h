@@ -9,7 +9,9 @@
 #ifndef __PI_Start__lll__
 #define __PI_Start__lll__
 
+
 #include "simpleMath.h"
+#include <xmmintrin.h>
 
 extern int dimVector;
 extern int numVector;
@@ -17,7 +19,7 @@ extern int numVector;
 
 void shiftVector(double** base, int k, int kl);
 void initStructsLLL(double** base, int rows, int cols);
-void lll(double** base, int delta, int indiceMax);
+void lll(double** base, double delta, int indiceMax);
 
 
 

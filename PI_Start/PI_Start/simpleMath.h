@@ -10,6 +10,7 @@
 #define __PI_Start__simpleMath__
 
 #include <iostream>
+#include <cstring>
 #include <math.h>
 
 

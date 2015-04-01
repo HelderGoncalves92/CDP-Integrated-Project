@@ -58,11 +58,11 @@ int main(int argc, const char * argv[]) {
     NTL::G_LLL_FP(B,0.99);
     
     //Basis Matrix - Memory Allocation
-    int rows = B.NumRows(), cols= B.NumCols(), i;
-    double** B_ = (double**)malloc((rows+1) *sizeof(double*));
+    int rows = B.NumRows(), cols= B.NumCols();
+    double** B_ = (double**)_mm_malloc((rows+1) *sizeof(double*),64);
     
     for(int row = 0; row < rows+1; row++)
-        B_[row] = (double*)malloc(cols*sizeof(double));
+        B_[row] = (double*)_mm_malloc(cols*sizeof(double),64);
     
     
     //Convert ZZ data to double
