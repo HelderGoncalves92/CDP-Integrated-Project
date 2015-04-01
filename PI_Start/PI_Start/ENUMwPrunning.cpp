@@ -38,7 +38,7 @@ int* EnumWPrun (double* mu[], double b[], int ini, int fim){
 				i--;
 				d[i - 1 - ini] = fmax(d[i - 1 - ini], d[i - ini]);
 				for(j = d[i - ini]; j <= i+1; j--){
-					E[j][i - ini] = E[j+1][i - ini] + u[j - ini] * mu[j][i];
+					E[j][i - ini] = E[j+1][i - ini] + u[j] * mu[j][i-ini];
 				}
 				c[i] = -E[i + 1 - ini][i - ini];
 				u[i - ini] = round(c[i]);
@@ -53,7 +53,7 @@ int* EnumWPrun (double* mu[], double b[], int ini, int fim){
 		}else{
 			if(i == tam){
 				for (j = ini; j <= fim; j++){
-					res[j] = uL[j];
+					res[j] = uL[j - ini];
 				}
 				return res;
 			}
