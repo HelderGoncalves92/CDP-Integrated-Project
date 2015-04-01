@@ -37,7 +37,7 @@ int* EnumWPrun (double* mu[], double b[], int ini, int fim){
 				//move down
 				i--;
 				d[i - 1 - ini] = fmax(d[i - 1 - ini], d[i - ini]);
-				for(j = d[i - ini]; j <= i+1; j--){
+				for(j = d[i - ini]; j <= i+1-ini; j--){
 					E[j][i - ini] = E[j+1][i - ini] + u[j] * mu[j][i-ini];
 				}
 				c[i] = -E[i + 1 - ini][i - ini];
