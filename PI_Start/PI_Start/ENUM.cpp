@@ -2,7 +2,7 @@
 //Algoritmo em http://www.csie.nuk.edu.tw/~cychen/Lattices/Lattice%20Basis%20Reduction_%20Improved%20Practical%20Algorithms%20and%20Solving%20Subset%20Sum%20Problems.pdf - pagina 16
 
 #include "math.h"
-
+/*
 double* ENUM(double* b[], double c[], double* mu[], int k){
 	double cL, cT[k+1], y[k+1], v[k+1];
 	int delta[k+1], s = 0, t = 0, d[k+1], i, h;
@@ -57,7 +57,7 @@ double* ENUM(double* b[], double c[], double* mu[], int k){
 	for(i = 0; i < k; i++){
 		aux2 = 0;
 		for(h = i; h < k; h++){
-			aux2 += u[h], mu[h][i];
+			aux2 += u[h] * mu[h][i];
 		}
 		aux2 = pow(aux2,2);
 		aux += aux2;
@@ -66,5 +66,5 @@ double* ENUM(double* b[], double c[], double* mu[], int k){
 	retval = fmin(bnew, aux);
 
 	return retval;
-}
+}*/
 

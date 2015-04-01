@@ -11,6 +11,7 @@
 
 #include "simpleMath.h"
 
-
+extern int dimVector;
+extern int numVector;
 
 #endif /* defined(__PI_Start__ENUM__) */

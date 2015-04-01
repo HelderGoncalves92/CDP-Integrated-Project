@@ -10,7 +10,7 @@
 #define __PI_Start__BKZ__
 
 #include "lll.h"
-
+#include "ENUMwPrunning.h"
 
 
 #endif /* defined(__PI_Start__BKZ__) */
