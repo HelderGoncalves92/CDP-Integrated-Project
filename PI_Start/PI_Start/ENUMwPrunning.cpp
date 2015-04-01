@@ -52,7 +52,10 @@ int* EnumWPrun (double* mu[], double b[], int ini, int fim){
 			}
 		}else{
 			if(i == tam){
-				return uL;
+				for (j = ini; j <= fim; j++){
+					res[j] = uL[j];
+				}
+				return res;
 			}
 			//move up
 			i++;
