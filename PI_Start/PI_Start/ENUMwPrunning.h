@@ -10,7 +10,9 @@
 #define __PI_Start__ENUMwPrunning__
 
 #include "simpleMath.h"
+#include <iostream.h>
 
-
+extern int dimVector;
+extern int numVector;
 
 #endif /* defined(__PI_Start__ENUMwPrunning__) */

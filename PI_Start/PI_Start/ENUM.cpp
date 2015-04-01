@@ -57,7 +57,7 @@ double* ENUM(double* b[], double c[], double* mu[], int k){
 	for(i = 0; i < k; i++){
 		aux2 = 0;
 		for(h = i; h < k; h++){
-			aux2 += u[h], mu[h][i];
+			aux2 += u[h] * mu[h][i];
 		}
 		aux2 = pow(aux2,2);
 		aux += aux2;
