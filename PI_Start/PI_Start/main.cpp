@@ -20,7 +20,7 @@
 using namespace std;
 int dim;
 double **mu;
-double *c;
+double *B;
 
 
 
@@ -54,7 +54,7 @@ int main(int argc, const char * argv[]) {
     }
     
     
-    NTL::G_BKZ_FP(B, 0.99, 20 ); //BKZ janela 20
+    //NTL::G_BKZ_FP(B, 0.99, 20 ); //BKZ janela 20
     //NTL::G_LLL_FP(B,0.99);
     
     //Basis Matrix - Memory Allocation
@@ -68,16 +68,17 @@ int main(int argc, const char * argv[]) {
     //Convert ZZ data to double
     MatIntFromMatZZ(B_, B);
     
-    //Init lll Structs
-    initStructsLLL(cols);
+    //Init all Structs
+    initBKZ(cols);
     
-    //BKZ(B_, 20, 0.99);
+    BKZ(B_, 20, 0.99);
     //lll(B_, 0.99, dim);
+    
     
     cout << "********************" << endl;
     for (int i=0; i<rows; i++) {
         for (int j=0; j<cols; j++) {
-            cout << (int)B_[i][j]<< " ";
+            cout << B_[i][j]<< " ";
         }
         cout << endl;
     }

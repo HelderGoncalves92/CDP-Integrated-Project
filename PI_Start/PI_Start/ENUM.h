@@ -10,11 +10,15 @@
 #define __PI_Start__ENUM__
 
 #include <xmmintrin.h>
-#include "simpleMath.h"
+#include "lll.h"
 
 extern int dim;
 extern double **mu;
+extern double *B;
 
-int* ENUM(double* c, int ini, int fim);
+void initENUM();
+int* ENUM(int ini, int fim);
+
+int* basicENUM();
 
 #endif /* defined(__PI_Start__ENUM__) */

@@ -2,21 +2,34 @@
 
 #include "ENUM.h"
 #include "math.h"
-int* ENUM(double* c, int ini, int fim){
-	double cL, *cT, *y, *v;
-	int *delta, s = ini, t = ini, *d, i, h;
-	int *u, *uT;
 
-	//Alocate memory for every vector
-	cT = (double*)_mm_malloc(((dim + 1)) * sizeof(double), 64);
-	y = (double*)_mm_malloc((dim + 1) * sizeof(double), 64);
-	v = (double*)_mm_malloc((dim + 1) * sizeof(double), 64);
-	delta = (int*)_mm_malloc((dim + 1) * sizeof(int), 64);
-	d = (int*)_mm_malloc((dim + 1) * sizeof(int), 64);
-	u = (int*)_mm_malloc((dim + 1) * sizeof(int), 64);
-	uT = (int*)_mm_malloc((dim + 1) * sizeof(int), 64);
+double cL, *cT, *y, *v;
+int *u, *uT, *d, *delta,  *uMIN, *l;
 
-	cL = c[ini];
+
+
+void initENUM(){
+    //Alocate memory for every vector
+    cT = (double*)_mm_malloc(dim * sizeof(double), 64);
+    y = (double*)_mm_malloc(dim * sizeof(double), 64);
+    v = (double*)_mm_malloc(dim * sizeof(double), 64);
+    delta = (int*)_mm_malloc(dim * sizeof(int), 64);
+    d = (int*)_mm_malloc(dim * sizeof(int), 64);
+    u = (int*)_mm_malloc(dim * sizeof(int), 64);
+    uT = (int*)_mm_malloc(dim * sizeof(int), 64);
+    
+    
+    //EXTRA
+    l = (int*)_mm_malloc((dim) * sizeof(int), 64);
+    uMIN = (int*)_mm_malloc((dim) * sizeof(int), 64);
+}
+
+
+int* ENUM(int ini, int fim){
+	
+	int s = ini, t = ini, i;
+
+	cL = B[ini];
 	u[ini] = uT[ini] = 1;
 	y[ini] = delta[ini] = 0;
 	d[ini] = 1;
@@ -31,13 +44,13 @@ int* ENUM(double* c, int ini, int fim){
 	}
 
 	while(t <= fim){
-		cT[t] = cT[t + 1] + pow(y[t] + uT[t],2) * c[t];
+		cT[t] = cT[t + 1] + pow(y[t] + uT[t],2) * B[t];
 		if (cT[t] < cL){
 			if (t > ini){
 				t--;
 				y[t] = 0;
 				for (i = t + 1; i <= s; i++){
-					y[t] += uT[i], mu[i][t];
+					y[t] += uT[i]* mu[i][t];
 				}
 				uT[t] = v[t] = round(-y[t]);
 				delta[t] = 0;
@@ -68,6 +81,6 @@ int* ENUM(double* c, int ini, int fim){
 		}
 	}
 	
-	return uT;
+	return u;
 }
 
