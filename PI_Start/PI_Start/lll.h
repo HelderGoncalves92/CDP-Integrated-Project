@@ -12,12 +12,16 @@
 
  #include "simpleMath.h"
  #include <xmmintrin.h>
+
+
  
- extern int dim;
+extern int dim;
+extern double **mu;
+extern double *c;
  
  void initStructsLLL(int dim);
  void shiftVector(double** base, int k, int kl);
- void lll(double** base, double delta);
+ void lll(double** base, double delta, int kmax);
  
 
 #endif /* defined(__PI_Start__lll__) */

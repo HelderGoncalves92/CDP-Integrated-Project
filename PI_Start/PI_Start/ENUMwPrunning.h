@@ -11,9 +11,9 @@
 
 #include "simpleMath.h"
 
-extern int dimVector;
-extern int numVector;
+extern int dim;
+extern double **mu;
 
-int* EnumWPrun (double* mu[], double b[], int ini, int fim);
+int* EnumWPrun (double b[], int ini, int fim);
 
 #endif /* defined(__PI_Start__ENUMwPrunning__) */

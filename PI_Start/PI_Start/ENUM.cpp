@@ -2,19 +2,19 @@
 
 #include "ENUM.h"
 #include "math.h"
-int* ENUM(double* c, double** mu, int ini, int fim){
+int* ENUM(double* c, int ini, int fim){
 	double cL, *cT, *y, *v;
 	int *delta, s = ini, t = ini, *d, i, h;
 	int *u, *uT;
 
 	//Alocate memory for every vector
-	cT = (double*)_mm_malloc(((dimVector + 1)) * sizeof(double), 64);
-	y = (double*)_mm_malloc((dimVector + 1) * sizeof(double), 64);
-	v = (double*)_mm_malloc((dimVector + 1) * sizeof(double), 64);
-	delta = (int*)_mm_malloc((dimVector + 1) * sizeof(int), 64);
-	d = (int*)_mm_malloc((dimVector + 1) * sizeof(int), 64);
-	u = (int*)_mm_malloc((dimVector + 1) * sizeof(int), 64);
-	uT = (int*)_mm_malloc((dimVector + 1) * sizeof(int), 64);
+	cT = (double*)_mm_malloc(((dim + 1)) * sizeof(double), 64);
+	y = (double*)_mm_malloc((dim + 1) * sizeof(double), 64);
+	v = (double*)_mm_malloc((dim + 1) * sizeof(double), 64);
+	delta = (int*)_mm_malloc((dim + 1) * sizeof(int), 64);
+	d = (int*)_mm_malloc((dim + 1) * sizeof(int), 64);
+	u = (int*)_mm_malloc((dim + 1) * sizeof(int), 64);
+	uT = (int*)_mm_malloc((dim + 1) * sizeof(int), 64);
 
 	cL = c[ini];
 	u[ini] = uT[ini] = 1;

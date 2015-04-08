@@ -9,11 +9,12 @@
 #ifndef __PI_Start__ENUM__
 #define __PI_Start__ENUM__
 
+#include <xmmintrin.h>
 #include "simpleMath.h"
 
-extern int dimVector;
-extern int numVector;
+extern int dim;
+extern double **mu;
 
-int* ENUM(double* c, double** mu, int ini, int fim);
+int* ENUM(double* c, int ini, int fim);
 
 #endif /* defined(__PI_Start__ENUM__) */

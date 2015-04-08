@@ -1,7 +1,7 @@
 #include "ENUMwPrunning.h"
 #include "xmmintrin.h"
 
-int* EnumWPrun (double** mu, double* b, int ini, int fim){
+int* EnumWPrun (double* b, int ini, int fim){
 	double C = b[ini];
 	//O i começa a ini pois e o primeiro indice
 	int i = ini, j, k, tam = fim - ini;
@@ -11,22 +11,22 @@ int* EnumWPrun (double** mu, double* b, int ini, int fim){
 	int last_nonzero = 0;
 
 	//Alocate vectors
-	dist = (double*)_mm_malloc((dimVector + 1) * sizeof(double), 64);
-	c = (double*)_mm_malloc(dimVector*sizeof(double), 64);
-	delta = (int*)_mm_malloc(dimVector*sizeof(int), 64);
-	d = (int*)_mm_malloc(dimVector*sizeof(int), 64);
-	u = (int*)_mm_malloc(dimVector*sizeof(int), 64);
-	uL = (int*)_mm_malloc(dimVector*sizeof(int), 64);
-	res = (int*)_mm_malloc(dimVector*sizeof(int), 64);
-	E = (double**)_mm_malloc((dimVector + 1)*sizeof(double*), 64);
+	dist = (double*)_mm_malloc((dim + 1) * sizeof(double), 64);
+	c = (double*)_mm_malloc(dim*sizeof(double), 64);
+	delta = (int*)_mm_malloc(dim*sizeof(int), 64);
+	d = (int*)_mm_malloc(dim*sizeof(int), 64);
+	u = (int*)_mm_malloc(dim*sizeof(int), 64);
+	uL = (int*)_mm_malloc(dim*sizeof(int), 64);
+	res = (int*)_mm_malloc(dim*sizeof(int), 64);
+	E = (double**)_mm_malloc((dim + 1)*sizeof(double*), 64);
 
-	for (j = 0; j <= dimVector; j++){
-		E[j] = (double*)_mm_malloc(dimVector*sizeof(double), 64);
-		for (k = 0; k < dimVector; k++){
+	for (j = 0; j <= dim; j++){
+		E[j] = (double*)_mm_malloc(dim*sizeof(double), 64);
+		for (k = 0; k < dim; k++){
 			E[j][k] = 0;
 		}
 	}
-	for (j = 0; j < dimVector; j++){
+	for (j = 0; j < dim; j++){
 		res[j] = 0;
 	}
 
@@ -59,7 +59,7 @@ int* EnumWPrun (double** mu, double* b, int ini, int fim){
 			}else{
 				//update best vector
 				C = dist[i];
-				for(j = 0; j < dimVector; j++){
+				for(j = 0; j < dim; j++){
 					uL[j] = u[j];
 				}
 			}

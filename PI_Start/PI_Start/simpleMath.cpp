@@ -13,7 +13,7 @@ int minn(int a, int b){ return (a<b)?a:b; }
 
 double vectorNorm(double *v, int dim){
     int i;
-    double res = 0;
+    double res = 0.0;
     
     for(i=0; i<dim; i++)
         res += pow(v[i], 2);
@@ -34,7 +34,7 @@ void normalizeVector(double *v, int dim){
 double innerProduct(double *x, double *y, int dim){
     
     int i;
-    double result=0;
+    double result=0.0;
     
     for(i=0; i<dim; i++){
         result += x[i]*y[i];

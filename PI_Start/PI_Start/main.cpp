@@ -15,10 +15,12 @@
 
 #include <iostream>
 #include <fstream>
-#include "lll.h"
+#include "BKZ.h"
 
 using namespace std;
 int dim;
+double **mu;
+double *c;
 
 
 
@@ -52,7 +54,7 @@ int main(int argc, const char * argv[]) {
     }
     
     
-    //NTL::G_BKZ_FP(B, 0.99, 10 ); //BKZ janela 20
+    NTL::G_BKZ_FP(B, 0.99, 20 ); //BKZ janela 20
     //NTL::G_LLL_FP(B,0.99);
     
     //Basis Matrix - Memory Allocation
@@ -69,7 +71,8 @@ int main(int argc, const char * argv[]) {
     //Init lll Structs
     initStructsLLL(cols);
     
-    lll(B_, 0.99);
+    //BKZ(B_, 20, 0.99);
+    //lll(B_, 0.99, dim);
     
     cout << "********************" << endl;
     for (int i=0; i<rows; i++) {

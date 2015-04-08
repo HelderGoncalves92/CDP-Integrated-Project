@@ -9,9 +9,6 @@
 #include "lll.h"
 
 double **baseORT;
-double **u;
-
-double *c;
 double *B;
 
 void initStructsLLL(int dimension){
@@ -20,13 +17,13 @@ void initStructsLLL(int dimension){
     
     //Allocate all necessary memory
     baseORT = (double**)_mm_malloc(dim*sizeof(double*),64);
-    u = (double**)_mm_malloc(dim*sizeof(double*),64);
+    mu = (double**)_mm_malloc(dim*sizeof(double*),64);
     
     for(i=0; i<dim; i++){
         
         //Base Orthogonal
         baseORT[i] = (double*)_mm_malloc(dim*sizeof(double),64);
-        u[i] = (double*)_mm_malloc(dim*sizeof(double),64);
+        mu[i] = (double*)_mm_malloc(dim*sizeof(double),64);
     }
     
     c = (double*)_mm_malloc(dim*sizeof(double),64);
@@ -62,10 +59,10 @@ void computeGSO(double** base){
         memcpy(baseORT[i], base[i], dim*sizeof(double));
         
         for(j=0; j<i; j++){
-            u[i][j] = innerProduct(base[i], baseORT[j], dim) / B[j];
+            mu[i][j] = innerProduct(base[i], baseORT[j], dim) / B[j];
             
             for(k=0; k<dim; k++)
-                baseORT[i][k] -= u[i][j] * baseORT[j][k];
+                baseORT[i][k] -= mu[i][j] * baseORT[j][k];
             
         }
         B[i] = innerProduct(baseORT[i], baseORT[i], dim);
@@ -83,7 +80,7 @@ double breakCondition(int k, int kl){
     double res=c[kl];
     
     for(i=k-1; i<kl; i++){
-        res += pow(u[kl][i],2) * c[i];
+        res += pow(mu[kl][i],2) * c[i];
     }
     
     return res;
@@ -96,11 +93,11 @@ void sizeReduction(double** base, int k){
     for(i=k-1; i>=0; i--){
         
         for(j=0; j<dim; j++){
-            base[k][j] -= round(u[k][i]) * base[i][j];
+            base[k][j] -= round(mu[k][i]) * base[i][j];
         }
         
         for(j=0; j<i; j++){
-            u[k][j] -= round(u[k][i]) * u[i][j];
+            mu[k][j] -= round(mu[k][i]) * mu[i][j];
         }
     }
     
@@ -108,13 +105,13 @@ void sizeReduction(double** base, int k){
     computeGSO(base);
 }
 
-void lll(double** base, double delta){
+void lll(double** base, double delta, int kmax){
     
     int i, k=1, kl;
     
     computeGSO(base);
     
-    while (k<dim) {
+    while (k<kmax) {
         sizeReduction(base, k);
         
         kl = k;
@@ -123,7 +120,7 @@ void lll(double** base, double delta){
         }
         
         for(i=0; i<k-1; i++){
-            u[k][i] = u[kl][i];
+            mu[k][i] = mu[kl][i];
         }
         
         //Shift vectors

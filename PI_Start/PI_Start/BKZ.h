@@ -13,5 +13,9 @@
 #include "ENUMwPrunning.h"
 #include "ENUM.h"
 
+extern double **mu;
+extern double *c;
+
+double** BKZ(double** bases, int beta, double delta);
 
 #endif /* defined(__PI_Start__BKZ__) */
