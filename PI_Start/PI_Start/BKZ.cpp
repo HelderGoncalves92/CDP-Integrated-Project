@@ -41,8 +41,8 @@ double** BKZ(double** bases, double *mu[], double *c, int beta, double delta){
 			shiftVector(bases, j - 1, dimVector);
 
 
-			//Chama LLL com a nova matriz
-			lll(bases, delta, h-1);
+			//Chama LLL com a nova matriz, acaba em h pois vai ter mais 1 vetor a computar pela LLL
+			lll(bases, delta, h);
 		}else{
 			z++;
 			//chama LLL com a matriz actual
