@@ -18,9 +18,7 @@
 #include "lll.h"
 
 using namespace std;
-
-int dimVector;
-int numVector;
+int dim;
 
 
 
@@ -54,11 +52,11 @@ int main(int argc, const char * argv[]) {
     }
     
     
-    NTL::G_BKZ_FP(B, 0.99, 10 );
-    NTL::G_LLL_FP(B,0.99);
+    //NTL::G_BKZ_FP(B, 0.99, 10 ); //BKZ janela 20
+    //NTL::G_LLL_FP(B,0.99);
     
     //Basis Matrix - Memory Allocation
-    int rows = B.NumRows(), cols= B.NumCols();
+    int rows = (int)B.NumRows(), cols= (int)B.NumCols();
     double** B_ = (double**)_mm_malloc((rows+1) *sizeof(double*),64);
     
     for(int row = 0; row < rows+1; row++)
@@ -68,11 +66,18 @@ int main(int argc, const char * argv[]) {
     //Convert ZZ data to double
     MatIntFromMatZZ(B_, B);
     
-    
     //Init lll Structs
-    initStructsLLL(B_, rows, cols);
+    initStructsLLL(cols);
     
-    lll(B_, 0.99, rows);
+    lll(B_, 0.99);
+    
+    cout << "********************" << endl;
+    for (int i=0; i<rows; i++) {
+        for (int j=0; j<cols; j++) {
+            cout << (int)B_[i][j]<< " ";
+        }
+        cout << endl;
+    }
     
     
     cout << "Finish" << endl;
