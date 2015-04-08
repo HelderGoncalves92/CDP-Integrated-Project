@@ -1,13 +1,12 @@
-//NOTA: Esta a receber k como se fosse k-j e assume-se que j=0
 //Algoritmo em http://www.csie.nuk.edu.tw/~cychen/Lattices/Lattice%20Basis%20Reduction_%20Improved%20Practical%20Algorithms%20and%20Solving%20Subset%20Sum%20Problems.pdf - pagina 16
 
 #include "math.h"
-/*
-double* ENUM(double* b[], double c[], double* mu[], int k){
+int* ENUM(double** b, double* c, double** mu, int ini, int fim){
+	int k = fim - ini;
 	double cL, cT[k+1], y[k+1], v[k+1];
-	int delta[k+1], s = 0, t = 0, d[k+1], i, h;
+	int delta[k+1], s = ini, t = ini, d[k+1], i, h;
 	int u[k+1], uT[k+1];
-	cL = c[0];
+	cL = c[ini];
 	u[0] = uT[0] = 1;
 	y[0] = delta[0] = 0;
 	d[0] = 1;
@@ -21,35 +20,44 @@ double* ENUM(double* b[], double c[], double* mu[], int k){
 		d[i] = 1;
 	}
 
-	while(t <= k){
-		cT[t] = cT[t+1] + pow(y[t] + uT[t],2) * c[t];
-		if(cT[t] < cL){
-			if(t > 0){
+	while(t <= fim){
+		cT[t - ini] = cT[t - ini + 1] + pow(y[t - ini] + uT[t - ini],2) * c[t];
+		if (cT[t - ini] < cL){
+			if (t > ini){
 				t--;
-				y[t] = 0;
-				for(i = t+1; i <= s; i++){
-					y[t] += uT[i], mu[i][t];
+				y[t - 1] = 0;
+				for (i = t + 1; i <= s; i++){
+					y[t - ini] += uT[i - ini], mu[i][t];
 				}
-				uT = v[t] = round(-y[t]);
-				delta[t] = 0;
-				if(uT[t] > -y[t]){
-					d[t] = -1;
-				}else{
-					d[t] = 1;
+				uT[t - ini] = v[t - ini] = round(-y[t - ini]);
+				delta[t - ini] = 0;
+				if (uT[t - ini] > -y[t - ini]){
+					d[t - ini] = -1;
 				}
-			}else{
-				t++;
-				s = fmax(s,t);
-				if(t < s){
-					delta[t] = -delta[t];
+				else{
+					d[t - ini] = 1;
 				}
-				if(delta[t]*d[t] >= 0){
-					delta[t] += d[t];
+			}
+			else{
+				cL = cT[0];
+				for (i = 0; i < k; i++){
+					u[i] = uT[i];
 				}
-				uT[t] = v[t] + delta[t];
 			}
 		}
+		else{
+			t++;
+			s = fmax(s,t);
+			if(t < s){
+				delta[t - ini] = -delta[t - ini];
+			}
+			if(delta[t - ini]*d[t - ini] >= 0){
+				delta[t - ini] += d[t - ini];
+			}
+			uT[t - ini] = v[t - ini] + delta[t - ini];
+		}
 	}
+	
 	double bnew = 0, aux = 0, aux2, retval;
 	for(i = 0; i < k; i++){
 		bnew += u[i]*b[i];
@@ -66,5 +74,5 @@ double* ENUM(double* b[], double c[], double* mu[], int k){
 	retval = fmin(bnew, aux);
 
 	return retval;
-}*/
+}
 
