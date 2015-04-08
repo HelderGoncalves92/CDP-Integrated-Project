@@ -11,6 +11,7 @@
 
 #include "lll.h"
 #include "ENUMwPrunning.h"
+#include "ENUM.h"
 
 
 #endif /* defined(__PI_Start__BKZ__) */

@@ -23,7 +23,7 @@ double** BKZ(double** bases, double *mu[], double *c, int beta, double delta){
 		k = fmin(j + beta - 1, dimVector);
 		h = fmin(k + 1, dimVector);
 		
-		v = EnumWPrun(mu, c, j - 1, k - 1);
+		v = ENUM(c, mu, j - 1, k - 1);
 		if (!passvec(v, j-1))
 		{
 			z = 0;

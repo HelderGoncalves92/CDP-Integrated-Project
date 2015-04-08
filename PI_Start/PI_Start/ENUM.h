@@ -14,4 +14,6 @@
 extern int dimVector;
 extern int numVector;
 
+int* ENUM(double* c, double** mu, int ini, int fim);
+
 #endif /* defined(__PI_Start__ENUM__) */

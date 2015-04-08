@@ -18,6 +18,7 @@ double vectorNorm(double *v, int dim);
 void normalizeVector(double *v, int dim);
 double innerProduct(double *x, double *y, int dim);
 void projection(double *u, double *v, double *res, int dim);
-
+int maxn(int a, int b);
+int minn(int a, int b);
 
 #endif /* defined(__PI_Start__simpleMath__) */

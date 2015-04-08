@@ -8,6 +8,8 @@
 
 #include "simpleMath.h"
 
+int maxn(int a, int b){ return (a<b)?b:a; }
+int minn(int a, int b){ return (a<b)?a:b; }
 
 double vectorNorm(double *v, int dim){
     int i;
