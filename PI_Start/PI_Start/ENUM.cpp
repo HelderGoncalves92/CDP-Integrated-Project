@@ -4,7 +4,7 @@
 #include "math.h"
 
 double cL, *cT, *y, *v;
-int *u, *uT, *d, *delta,  *uMIN, *l;
+int *u, *uT, *d, *delta;
 
 
 
@@ -17,18 +17,16 @@ void initENUM(){
     d = (int*)_mm_malloc(dim * sizeof(int), 64);
     u = (int*)_mm_malloc(dim * sizeof(int), 64);
     uT = (int*)_mm_malloc(dim * sizeof(int), 64);
-    
-    
-    //EXTRA
-    l = (int*)_mm_malloc((dim) * sizeof(int), 64);
-    uMIN = (int*)_mm_malloc((dim) * sizeof(int), 64);
 }
 
 
+//ENUM accordingly C. P. Schnorr && M. Euchner
 int* ENUM(int ini, int fim){
 	
 	int s = ini, t = ini, i;
-
+    
+    
+    //Init all vectors
 	cL = B[ini];
 	u[ini] = uT[ini] = 1;
 	y[ini] = delta[ini] = 0;

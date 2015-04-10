@@ -10,33 +10,35 @@
 
 double **baseORT;
 
+//Alocate memory to (dim+1) vectors because of BKZ insertion
 void initStructsLLL(int dimension){
     int i;
+    
+    //Define global variable
     dim=dimension;
     
-    //Allocate all necessary memory
+    //Allocate all necessary memory (Orthogonal Basis and its coefficients)
     baseORT = (double**)_mm_malloc((dim+1)*sizeof(double*),64);
     mu = (double**)_mm_malloc((dim+1)*sizeof(double*),64);
     
     for(i=0; i<=dim; i++){
-        
-        //Base Orthogonal
         baseORT[i] = (double*)_mm_malloc(dim*sizeof(double),64);
         mu[i] = (double*)_mm_malloc(dim*sizeof(double),64);
     }
     
+    //Quadratics Norms
     B = (double*)_mm_malloc((dim+1)*sizeof(double),64);
 }
 
-
+//Insert B[kl] right before B[k] and shift the other pointers
 void shiftVector(double** base, int k, int kl){
     
     double *aux, *aux2;
     
+    //Just if they are differents
     if(k!=kl){
         aux2 = base[kl];
     
-        //insert B[kl] right before B[k] and shift the other pointers
         for (; k<kl; k++) {
             aux = base[k];
             base[k] = aux2;
@@ -46,12 +48,14 @@ void shiftVector(double** base, int k, int kl){
     }
 }
 
+
+//Compute all Coefficients and Norms accordingly the passed basis
 void computeGSO(double** base){
-    
     int i, j, k;
     
-    memcpy(baseORT[0], base[0], dim*sizeof(double));
-    B[0] = innerProduct(baseORT[0], baseORT[0], dim);
+    //Prepare first vector
+    memcpy(baseORT[0], base[0], dim*sizeof(double));    //Copy from original basis
+    B[0] = innerProduct(baseORT[0], baseORT[0], dim);   //<bi,bi> equals to ||bi||^2
  
     for(i=1; i<dim; i++){
         memcpy(baseORT[i], base[i], dim*sizeof(double));
@@ -64,6 +68,7 @@ void computeGSO(double** base){
             
         }
         B[i] = innerProduct(baseORT[i], baseORT[i], dim);
+        //printf("%f | %f\n",B[i], pow(vectorNorm(baseORT[i], dim),2));
     }
 }
 
@@ -86,6 +91,7 @@ void sizeReduction(double** base, int k){
     double r;
     
     for(i=k-1; i>=0; i--){
+        //Round mu[k][i] once
         r = round(mu[k][i]);
         for(j=0; j<dim; j++){
             base[k][j] -= r * base[i][j];
@@ -96,7 +102,7 @@ void sizeReduction(double** base, int k){
         }
     }
     
-    //Update the GSO accordingly
+    //Update the GSO accordingly the new basis
     computeGSO(base);
 }
 

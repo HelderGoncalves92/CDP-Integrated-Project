@@ -53,7 +53,7 @@ int main(int argc, const char * argv[]) {
         exit(-1);
     }
     
-    
+    //To call LLL or BKZ of NTL
     //NTL::G_BKZ_FP(B, 0.99, 20 ); //BKZ janela 20
     //NTL::G_LLL_FP(B,0.99);
     
@@ -68,13 +68,16 @@ int main(int argc, const char * argv[]) {
     //Convert ZZ data to double
     MatIntFromMatZZ(B_, B);
     
-    //Init all Structs
+    //Init all Structs (Vectors an Matrix)
     initBKZ(cols);
     
-    BKZ(B_, 20, 0.99);
+    
+    //To call our LLL or BKZ
     //lll(B_, 0.99, dim);
+    BKZ(B_, 20, 0.99);
     
     
+    //FINAL OUTPUT
     cout << "********************" << endl;
     for (int i=0; i<rows; i++) {
         for (int j=0; j<cols; j++) {
