@@ -23,8 +23,7 @@ void initENUM(){
 //ENUM accordingly C. P. Schnorr && M. Euchner
 int* ENUM(int ini, int fim){
 	
-	int s = ini, t = ini, i;
-    
+    int s = ini, t = ini, i;
     
     //Init all vectors
 	cL = B[ini];

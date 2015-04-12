@@ -31,9 +31,9 @@ void initStructsLLL(int dimension){
 }
 
 //Insert B[kl] right before B[k] and shift the other pointers
-void shiftVector(double** base, int k, int kl){
+void shiftVector(long** base, int k, int kl){
     
-    double *aux, *aux2;
+    long *aux, *aux2;
     
     //Just if they are differents
     if(k!=kl){
@@ -59,7 +59,7 @@ void copyVectorToDouble(double* dst, long* src){
 //Compute all Coefficients and Norms accordingly the passed basis
 void computeGSO(long** base){
     int i, j, k;
-    double aux;
+    
     //Prepare first vector
     copyVectorToDouble(baseORT[0], base[0]);
     B[0] = innerProduct(baseORT[0], baseORT[0], dim);   //<bi,bi> equals to ||bi||^2
@@ -75,7 +75,7 @@ void computeGSO(long** base){
             
         }
         B[i] = innerProduct(baseORT[i], baseORT[i], dim);
-        printf("%f | %f\n",B[i], pow(vectorNorm(baseORT[i], dim),2));
+     //   printf("%f | %f\n",B[i], pow(vectorNorm(baseORT[i], dim),2));
     }
 }
 
@@ -93,7 +93,7 @@ double breakCondition(int k, int kl){
 }
 
 
-void sizeReduction(double** base, int k){
+void sizeReduction(long** base, int k){
     int i, j;
     double r;
     
@@ -113,10 +113,10 @@ void sizeReduction(double** base, int k){
    // computeGSO(base);
 }
 
-void lll(double** base, double delta, int kmax){
+void lll(long** base, double delta, int kmax){
     
     int i, k=1, kl;
-    //computeGSO(base);
+    computeGSO(base);
     
     while (k<kmax) {
         sizeReduction(base, k);

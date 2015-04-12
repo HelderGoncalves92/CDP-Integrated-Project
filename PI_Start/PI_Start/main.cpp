@@ -22,12 +22,19 @@ int dim;
 double **mu;
 double *B;
 
-
-
+void computeNewVector(long* dst_vec, int* src_vec ,long** base){
+    int i,l;
+    
+    for (i = 0; i < dim; i++){
+        for (l = 0; l < dim; l++){
+            dst_vec[l] += -src_vec[i] * base[i][l];
+        }
+    }
+}
 
 void MatIntFromMatZZ(long** A, NTL::mat_ZZ B) {
     
-    int row,col, rows = B.NumRows(), cols= B.NumCols();
+    int row,col, rows = (int)B.NumRows(), cols= (int)B.NumCols();
     
     for (row = 0; row < rows; ++row) {
         for (col = 0; col < cols; ++col) {
@@ -40,12 +47,12 @@ void MatIntFromMatZZ(long** A, NTL::mat_ZZ B) {
 int main(int argc, const char * argv[]) {
     
     
-    NTL::mat_ZZ B;
+    NTL::mat_ZZ BB;
     std::ifstream input_file(argv[1]);
     
     //Try to read Base file
     if (input_file.is_open()) {
-        input_file >> B;
+        input_file >> BB;
         input_file.close();
     }
     else{
@@ -54,41 +61,45 @@ int main(int argc, const char * argv[]) {
     }
     
     //To call LLL or BKZ of NTL
-    NTL::G_BKZ_FP(B, 0.99, 20 ); //BKZ janela 20
-    NTL::G_LLL_FP(B,0.99);
+    NTL::G_BKZ_FP(BB, 0.99, 20 ); //BKZ janela 20
+    NTL::G_LLL_FP(BB,0.99);
     
     //Basis Matrix - Memory Allocation
-    int rows = (int)B.NumRows(), cols= (int)B.NumCols();
-    long** B_ = (long**)_mm_malloc((rows+1) *sizeof(long*),64);
+    int rows = (int)BB.NumRows(), cols= (int)BB.NumCols();
+    long** BB_ = (long**)_mm_malloc((rows+1) *sizeof(long*),64);
     
     for(int row = 0; row < rows+1; row++)
-        B_[row] = (long*)_mm_malloc(cols*sizeof(long),64);
+        BB_[row] = (long*)_mm_malloc(cols*sizeof(long),64);
     
     
     //Convert ZZ data to double
-    MatIntFromMatZZ(B_, B);
+    MatIntFromMatZZ(BB_, BB);
     
     //Init all Structs (Vectors an Matrix)
-    //initBKZ(cols);
-    initStructsLLL(cols);
+    long* fvec = (long*)calloc(cols ,sizeof(long));
+    initBKZ(cols);
     
-    computeGSO(B_);
+    computeGSO(BB_);
+    int* vec = ENUM(0, dim-1);
     
-    //To call our LLL or BKZ
-    //lll(B_, 0.99, dim);
-    //BKZ(B_, 20, 0.99);
-    
+    computeNewVector(fvec, vec, BB_);
     
     //FINAL OUTPUT
-    cout << "********************" << endl;
-    for (int i=0; i<rows; i++) {
+   
+  /*  for (int i=0; i<rows; i++) {
         for (int j=0; j<cols; j++) {
-            cout << B_[i][j]<< " ";
+            cout << BB_[i][j]<< " ";
         }
         cout << endl;
     }
+    */
     
-    
+    cout << "\n********************" << endl;
+    for (int i=0; i<rows; i++)
+        cout << vec[i]<< " ";
+    cout << "\n********************" << endl;
+    for (int i=0; i<rows; i++)
+        cout << fvec[i]<< " ";
     cout << "Finish" << endl;
     return 0;
 }

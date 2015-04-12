@@ -24,7 +24,7 @@ bool passvec(int* v, int index){
 	return true;
 }
 
-double** BKZ(double** bases, int beta, double delta){
+void BKZ(long** bases, int beta, double delta){
 	int k, h, i, l;
     int *v;
 	double aux;
@@ -64,5 +64,4 @@ double** BKZ(double** bases, int beta, double delta){
 		}
         
     }
-	return bases;
 }

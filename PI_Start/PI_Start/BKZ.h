@@ -17,6 +17,6 @@ extern double **mu;
 extern double *B;
 
 void initBKZ(int dimension);
-double** BKZ(double** bases, int beta, double delta);
+void BKZ(long** bases, int beta, double delta);
 
 #endif /* defined(__PI_Start__BKZ__) */
