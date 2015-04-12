@@ -44,13 +44,14 @@ void BKZ(long** bases, int beta, double delta){
 			z = 0;
 			//Transforma a matriz para a enviar
 			//Insere nova base
+            for(i=0;i<dim; i++)
+                 bases[dim][i] = 0;
+            
 			for (i = 0; i < dim; i++){
 				//alterar vetor
-				aux = 0.0;
 				for (l = 0; l < dim; l++){
-					aux += v[i] * bases[l][i];
+					bases[dim][l] += v[i] * bases[i][l];
 				}
-				bases[dim][i] = aux;
 			}
 			//Faz shift da base
 			shiftVector(bases, j - 1, dim);
