@@ -48,27 +48,34 @@ void shiftVector(double** base, int k, int kl){
     }
 }
 
+void copyVectorToDouble(double* dst, long* src){
+    int i;
+    for (i=0; i<dim; i++) {
+        dst[i]=(double)src[i];
+    }
+}
+
 
 //Compute all Coefficients and Norms accordingly the passed basis
-void computeGSO(double** base){
+void computeGSO(long** base){
     int i, j, k;
-    
+    double aux;
     //Prepare first vector
-    memcpy(baseORT[0], base[0], dim*sizeof(double));    //Copy from original basis
+    copyVectorToDouble(baseORT[0], base[0]);
     B[0] = innerProduct(baseORT[0], baseORT[0], dim);   //<bi,bi> equals to ||bi||^2
- 
+    
     for(i=1; i<dim; i++){
-        memcpy(baseORT[i], base[i], dim*sizeof(double));
+        copyVectorToDouble(baseORT[i], base[i]);
         
         for(j=0; j<i; j++){
-            mu[i][j] = innerProduct(base[i], baseORT[j], dim) / B[j];
+            mu[i][j] = innerProductv2(base[i], baseORT[j], dim) / B[j];
             
             for(k=0; k<dim; k++)
                 baseORT[i][k] -= mu[i][j] * baseORT[j][k];
             
         }
         B[i] = innerProduct(baseORT[i], baseORT[i], dim);
-        //printf("%f | %f\n",B[i], pow(vectorNorm(baseORT[i], dim),2));
+        printf("%f | %f\n",B[i], pow(vectorNorm(baseORT[i], dim),2));
     }
 }
 
@@ -103,13 +110,13 @@ void sizeReduction(double** base, int k){
     }
     
     //Update the GSO accordingly the new basis
-    computeGSO(base);
+   // computeGSO(base);
 }
 
 void lll(double** base, double delta, int kmax){
     
     int i, k=1, kl;
-    computeGSO(base);
+    //computeGSO(base);
     
     while (k<kmax) {
         sizeReduction(base, k);

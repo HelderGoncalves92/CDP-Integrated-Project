@@ -25,7 +25,7 @@ double *B;
 
 
 
-void MatIntFromMatZZ(double** A, NTL::mat_ZZ B) {
+void MatIntFromMatZZ(long** A, NTL::mat_ZZ B) {
     
     int row,col, rows = B.NumRows(), cols= B.NumCols();
     
@@ -54,27 +54,29 @@ int main(int argc, const char * argv[]) {
     }
     
     //To call LLL or BKZ of NTL
-    //NTL::G_BKZ_FP(B, 0.99, 20 ); //BKZ janela 20
-    //NTL::G_LLL_FP(B,0.99);
+    NTL::G_BKZ_FP(B, 0.99, 20 ); //BKZ janela 20
+    NTL::G_LLL_FP(B,0.99);
     
     //Basis Matrix - Memory Allocation
     int rows = (int)B.NumRows(), cols= (int)B.NumCols();
-    double** B_ = (double**)_mm_malloc((rows+1) *sizeof(double*),64);
+    long** B_ = (long**)_mm_malloc((rows+1) *sizeof(long*),64);
     
     for(int row = 0; row < rows+1; row++)
-        B_[row] = (double*)_mm_malloc(cols*sizeof(double),64);
+        B_[row] = (long*)_mm_malloc(cols*sizeof(long),64);
     
     
     //Convert ZZ data to double
     MatIntFromMatZZ(B_, B);
     
     //Init all Structs (Vectors an Matrix)
-    initBKZ(cols);
+    //initBKZ(cols);
+    initStructsLLL(cols);
     
+    computeGSO(B_);
     
     //To call our LLL or BKZ
     //lll(B_, 0.99, dim);
-    BKZ(B_, 20, 0.99);
+    //BKZ(B_, 20, 0.99);
     
     
     //FINAL OUTPUT

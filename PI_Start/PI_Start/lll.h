@@ -20,7 +20,7 @@ extern double **mu;
 extern double *B;
  
 void initStructsLLL(int dim);
-void computeGSO(double** base);
+void computeGSO(long** base);
 void shiftVector(double** base, int k, int kl);
 void lll(double** base, double delta, int kmax);
  
