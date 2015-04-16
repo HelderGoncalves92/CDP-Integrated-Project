@@ -5,7 +5,7 @@
 //  Created by Hélder Gonçalves on 06/03/15.
 //  Copyright (c) 2015 Hélder Gonçalves. All rights reserved.
 //
-
+#include <stdio.h>
 #include <NTL/ZZ.h>
 #include <NTL/vec_double.h>
 #include <NTL/vec_ZZ.h>
@@ -44,6 +44,21 @@ void MatIntFromMatZZ(long** A, NTL::mat_ZZ B) {
     }
 }
 
+void check_equals(int* vec, int* ntl, int rows){
+    int mult = 1, equal = 1, i;
+    if(vec[0] == -ntl[0]){
+	mult = -1;
+    }
+    for(i = 0;i < rows;i++){
+	if(vec[i] != mult*ntl[i]){equal=0;}
+    }
+    if(equal==1){
+	printf("Vectors match\n");
+    }else{
+	printf("WARNING vectors do not match\n");
+    }
+} 
+
 int main(int argc, const char * argv[]) {
     
     
@@ -61,7 +76,7 @@ int main(int argc, const char * argv[]) {
     }
     
     //To call LLL or BKZ of NTL
-    NTL::G_BKZ_FP(BB, 0.99, 20 ); //BKZ janela 20
+ //   NTL::G_BKZ_FP(BB, 0.99, 20 ); //BKZ janela 20
     NTL::G_LLL_FP(BB,0.99);
     
     //Basis Matrix - Memory Allocation
@@ -81,19 +96,25 @@ int main(int argc, const char * argv[]) {
     
     computeGSO(BB_);
     int* vec = ENUM(0, dim-1);
-    
+    cout << "\n********************" << endl;
+    cout << "ENUM VEC" << endl;
+    for (int i=0;i<rows;i++) {
+	cout << vec[i] << " ";
+    }
+
     computeNewVector(fvec, vec, BB_);
+   
+    //check_equals(fvec, ntlvec, rows);
     
     //FINAL OUTPUT
    
-  /*  for (int i=0; i<rows; i++) {
+    for (int i=0; i<rows; i++) {
         for (int j=0; j<cols; j++) {
             cout << BB_[i][j]<< " ";
         }
         cout << endl;
     }
-    */
-    
+        
     cout << "\n********************" << endl;
     for (int i=0; i<rows; i++)
         cout << vec[i]<< " ";
@@ -101,5 +122,7 @@ int main(int argc, const char * argv[]) {
     for (int i=0; i<rows; i++)
         cout << fvec[i]<< " ";
     cout << "Finish" << endl;
+
+ 
     return 0;
 }

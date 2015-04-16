@@ -3,8 +3,8 @@
 #include "ENUM.h"
 #include "math.h"
 
-double cL, *cT, *y, *v;
-int *u, *uT, *d, *delta;
+double cL, *cT, *y;
+int *u, *uT, *d, *delta, *v;
 
 
 
@@ -12,7 +12,7 @@ void initENUM(){
     //Alocate memory for every vector
     cT = (double*)_mm_malloc(dim * sizeof(double), 64);
     y = (double*)_mm_malloc(dim * sizeof(double), 64);
-    v = (double*)_mm_malloc(dim * sizeof(double), 64);
+    v = (int*)_mm_malloc(dim * sizeof(int), 64);
     delta = (int*)_mm_malloc(dim * sizeof(int), 64);
     d = (int*)_mm_malloc(dim * sizeof(int), 64);
     u = (int*)_mm_malloc(dim * sizeof(int), 64);
@@ -27,8 +27,10 @@ int* ENUM(int ini, int fim){
     
     //Init all vectors
 	cL = B[ini];
-	u[ini] = uT[ini] = 1;
-	y[ini] = delta[ini] = 0;
+	u[ini] = 1;
+	uT[ini] = 1;
+	y[ini] = 0;
+	delta[ini] = 0;
 	d[ini] = 1;
 
 	for(i = ini + 1; i <= fim; i++){
@@ -60,7 +62,7 @@ int* ENUM(int ini, int fim){
 			}
 			else{
 				cL = cT[ini];
-				for (i = ini; i < fim; i++){
+				for (i = ini; i <= fim; i++){
 					u[i] = uT[i];
 				}
 			}
@@ -76,8 +78,7 @@ int* ENUM(int ini, int fim){
 			}
 			uT[t] = v[t] + delta[t];
 		}
-	}
-	
+	}	
 	return u;
 }
 
