@@ -115,12 +115,14 @@ int main(int argc, const char * argv[]) {
     */
     computeNewVector(fvec, vec, BB_);
     
-    cout << "\n********************" << endl;
+    //cout << "********************" << endl;
+    cout << "****** ENUM VEC ******" << endl;
     for (int i=0; i<rows; i++)
         cout << vec[i]<< " ";
-    cout << "\n********************" << endl;
+    //cout << "\n********************" << endl;
+     cout << "\n******** SVP ********" << endl;
     for (int i=0; i<rows; i++)
         cout << fvec[i]<< " ";
-    cout << "Finish" << endl;
+    cout  << endl;
     return 0;
 }
