@@ -5,7 +5,7 @@
 //  Created by Hélder Gonçalves on 06/03/15.
 //  Copyright (c) 2015 Hélder Gonçalves. All rights reserved.
 //
-
+#include <stdio.h>
 #include <NTL/ZZ.h>
 #include <NTL/vec_double.h>
 #include <NTL/vec_ZZ.h>
@@ -49,6 +49,21 @@ void MatIntFromMatZZ(long** A, NTL::mat_ZZ B) {
     }
 }
 
+void check_equals(int* vec, int* ntl, int rows){
+    int mult = 1, equal = 1, i;
+    if(vec[0] == -ntl[0]){
+	mult = -1;
+    }
+    for(i = 0;i < rows;i++){
+	if(vec[i] != mult*ntl[i]){equal=0;}
+    }
+    if(equal==1){
+	printf("Vectors match\n");
+    }else{
+	printf("WARNING vectors do not match\n");
+    }
+} 
+
 int main(int argc, const char * argv[]) {
     
     
@@ -77,8 +92,7 @@ int main(int argc, const char * argv[]) {
     
     //To call LLL or BKZ of NTL
     NTL::G_BKZ_FP(BB, 0.99, 20 ); //BKZ janela 20
-    //NTL::G_LLL_FP(BB, 0.99 ); //BKZ janela 20
-    
+
     
     //Basis Matrix - Memory Allocation
     int rows = (int)BB.NumRows(), cols= (int)BB.NumCols();
@@ -93,19 +107,22 @@ int main(int argc, const char * argv[]) {
     
     //Init all Structs (Vectors an Matrix)
     long* fvec = (long*)calloc(cols ,sizeof(long));
-    initBKZ(cols);
+    initStructsLLL(cols);
+    initENUM();
     
+    //Compute all Coefficients and Norms accordingly the basis
     computeGSO(BB_);
     
     
-/*
+    /*
     if(PAPI_start_counters(Events,NUM_EVENTS) != PAPI_OK) printf("Nao tem contadores papi\n");
     inicio=clock();
     if(PAPI_read_counters(values,NUM_EVENTS) != PAPI_OK) printf("Erro ao ler evento\n");
-  */
+    */
+    
     int* vec = ENUM(0, dim-1);
     
-   /*
+    /*
     fim=clock();
     printf("Tempo de multiplicacao: %f\n",(float)((fim-inicio)/CLOCKS_PER_SEC));
     if(PAPI_stop_counters(values,NUM_EVENTS) != PAPI_OK) printf("Erro ao parar evento\n");
@@ -113,16 +130,20 @@ int main(int argc, const char * argv[]) {
     printf("\n---Valores PAPI---\n");
     printf("L3_TCW: %lld;\nL3_TCM: %lld;\n",values[0],values[1]);
     */
+    
+    //Compute SVP with ENUM vector
     computeNewVector(fvec, vec, BB_);
     
-    //cout << "********************" << endl;
+    
+    //Final Outputs
     cout << "****** ENUM VEC ******" << endl;
     for (int i=0; i<rows; i++)
         cout << vec[i]<< " ";
-    //cout << "\n********************" << endl;
-     cout << "\n******** SVP ********" << endl;
+    cout << "\n******** SVP ********" << endl;
     for (int i=0; i<rows; i++)
         cout << fvec[i]<< " ";
+
     cout  << endl;
+
     return 0;
 }

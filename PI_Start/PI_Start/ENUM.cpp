@@ -6,8 +6,7 @@
 #include <stdio.h>
 
 double cL, *cT, *y;
-int *u, *uT, *d, *v, *delta;
-
+int *u, *uT, *d, *delta, *v;
 
 void initENUM(){
     //Alocate memory for every vector
@@ -18,6 +17,7 @@ void initENUM(){
     d = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
     u = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
     uT = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
+
 }
 
 
@@ -30,6 +30,7 @@ int* ENUM(int ini, int fim){
 	d[ini] = u[ini] = uT[ini] = 1;
 	y[ini] = delta[ini] = v[ini]= 0;
 
+
 	for(i = ini + 1; i <= fim+1; i++){
 		cT[i] = u[i] = uT[i] = y[i] = delta[i] = v[i] = 0;
 		d[i] = 1;
@@ -37,7 +38,7 @@ int* ENUM(int ini, int fim){
     
 	while(t <= fim){
         
-		cT[t] = cT[t + 1] + pow(y[t] + double(uT[t]),2) * B[t];
+		cT[t] = cT[t + 1] + pow(y[t] + uT[t],2) * B[t];
 
         if (cT[t] < cL){
 			if (t > ini){
