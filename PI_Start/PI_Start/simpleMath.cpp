@@ -58,8 +58,9 @@ double innerProductv2(long *x, double *y, int dim){
     double result=0.0;
     
     for(i=0; i<dim; i++){
-        result += x[i]*y[i];
+        result += ((double)x[i])*y[i];
     }
+    //printf("R:%f\n",result);
     return result;
 }
 

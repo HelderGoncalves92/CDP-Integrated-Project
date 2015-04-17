@@ -15,7 +15,12 @@
 
 #include <iostream>
 #include <fstream>
+#include <time.h>
+//#include <papi.h>
+
 #include "BKZ.h"
+
+#define NUM_EVENTS 2
 
 using namespace std;
 int dim;
@@ -47,6 +52,16 @@ void MatIntFromMatZZ(long** A, NTL::mat_ZZ B) {
 int main(int argc, const char * argv[]) {
     
     
+   /* int aux, Events[]={PAPI_L3_TCW,PAPI_L3_TCM};
+    long long values[NUM_EVENTS];
+    clock_t inicio,fim;
+    float totT=0.0;
+    
+    float real_time, proc_time, mflops;
+    long long flpops;
+    float ireal_time, iproc_time, imflops;
+    long long iflpops;
+    */
     NTL::mat_ZZ BB;
     std::ifstream input_file(argv[1]);
     
@@ -62,7 +77,8 @@ int main(int argc, const char * argv[]) {
     
     //To call LLL or BKZ of NTL
     NTL::G_BKZ_FP(BB, 0.99, 20 ); //BKZ janela 20
-    NTL::G_LLL_FP(BB,0.99);
+    //NTL::G_LLL_FP(BB, 0.99 ); //BKZ janela 20
+    
     
     //Basis Matrix - Memory Allocation
     int rows = (int)BB.NumRows(), cols= (int)BB.NumCols();
@@ -80,19 +96,24 @@ int main(int argc, const char * argv[]) {
     initBKZ(cols);
     
     computeGSO(BB_);
+    
+    
+/*
+    if(PAPI_start_counters(Events,NUM_EVENTS) != PAPI_OK) printf("Nao tem contadores papi\n");
+    inicio=clock();
+    if(PAPI_read_counters(values,NUM_EVENTS) != PAPI_OK) printf("Erro ao ler evento\n");
+  */
     int* vec = ENUM(0, dim-1);
     
-    computeNewVector(fvec, vec, BB_);
+   /*
+    fim=clock();
+    printf("Tempo de multiplicacao: %f\n",(float)((fim-inicio)/CLOCKS_PER_SEC));
+    if(PAPI_stop_counters(values,NUM_EVENTS) != PAPI_OK) printf("Erro ao parar evento\n");
     
-    //FINAL OUTPUT
-   
-  /*  for (int i=0; i<rows; i++) {
-        for (int j=0; j<cols; j++) {
-            cout << BB_[i][j]<< " ";
-        }
-        cout << endl;
-    }
+    printf("\n---Valores PAPI---\n");
+    printf("L3_TCW: %lld;\nL3_TCM: %lld;\n",values[0],values[1]);
     */
+    computeNewVector(fvec, vec, BB_);
     
     cout << "\n********************" << endl;
     for (int i=0; i<rows; i++)

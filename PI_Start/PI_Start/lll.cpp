@@ -63,18 +63,20 @@ void computeGSO(long** base){
     //Prepare first vector
     copyVectorToDouble(baseORT[0], base[0]);
     B[0] = innerProduct(baseORT[0], baseORT[0], dim);   //<bi,bi> equals to ||bi||^2
+   // printf("B:%f\n",B[0]);
     
     for(i=1; i<dim; i++){
         copyVectorToDouble(baseORT[i], base[i]);
         
         for(j=0; j<i; j++){
             mu[i][j] = innerProductv2(base[i], baseORT[j], dim) / B[j];
-            
+          //  printf("MU:%f\n",mu[i][j]);
             for(k=0; k<dim; k++)
                 baseORT[i][k] -= mu[i][j] * baseORT[j][k];
-            
+           // printf("BA:%f\n",baseORT[i][k]);
         }
         B[i] = innerProduct(baseORT[i], baseORT[i], dim);
+ //       printf("B:%f\n",B[i]);
      //   printf("%f | %f\n",B[i], pow(vectorNorm(baseORT[i], dim),2));
     }
 }
@@ -132,6 +134,7 @@ void lll(long** base, double delta, int kmax){
         
         //Shift vectors
         shiftVector(base, k, kl);
+        computeGSO(base);
         
         k++;
     }

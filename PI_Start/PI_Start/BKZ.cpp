@@ -13,27 +13,22 @@ void initBKZ(int dimension){
 bool passvec(int* v, int index){
 	int i;
 
-	if (v[index] != 1){  printf("Out: Index\n"); return false; }
+	if (v[index] != 1){ return false; }
 	for(i = 0; i < dim; i++){
         if (i != index && v[i] != 0){
-            printf("Out: Other\n");
             return false;
         }
 	}
-    printf("Aproved!!\n");
 	return true;
 }
 
 void BKZ(long** bases, int beta, double delta){
 	int k, h, i, l;
     int *v;
-	double aux;
 	int z = 0, j = 0;
 
-    int ff=0;
 	lll(bases, delta, dim);
 	while (z < dim - 1){
-        printf("Iter: %d ",ff++);
 		j = (j % (dim-1)) + 1;
 		k = fmin(j + beta - 1, dim);
 		h = fmin(k + 1, dim);
