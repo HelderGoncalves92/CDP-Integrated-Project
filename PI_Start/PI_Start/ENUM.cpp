@@ -42,7 +42,7 @@ int* ENUM(int ini, int fim){
     
     auxY[t] = y[t]*y[t];
     auxUT[t] = uT[t]*uT[t];
-    cT[t] = cT[t + 1] + (auxY[t] - 2*uT[t]*y[t] + auxUT[t]) * B[t];
+    cT[t] = cT[t + 1] + (auxY[t] + 2*uT[t]*y[t] + auxUT[t]) * B[t];
     
     
 	while(t <= fim){
@@ -70,7 +70,7 @@ int* ENUM(int ini, int fim){
                 //Prepare cT[t] to next iteration
                 auxY[t] = y[t]*y[t];
                 auxUT[t] = uT[t]*uT[t];
-                cT[t] = cT[t + 1] + (auxY[t] - 2*uT[t]*y[t] + auxUT[t]) * B[t];
+                cT[t] = cT[t + 1] + (auxY[t] + 2*uT[t]*y[t] + auxUT[t]) * B[t];
                 
 			}
 			else{
@@ -92,11 +92,10 @@ int* ENUM(int ini, int fim){
             
             //Prepare cT[t] to next iteration
             auxUT[t] = uT[t]*uT[t];
-            cT[t] = cT[t + 1] + (auxY[t] - 2*uT[t]*y[t] + auxUT[t]) * B[t];
+            cT[t] = cT[t + 1] + (auxY[t] + 2*uT[t]*y[t] + auxUT[t]) * B[t];
             
 		}
 	}
 	return u;
 }
 
-//cT[t] = cT[t + 1] + (y[t]*y[t] - 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
