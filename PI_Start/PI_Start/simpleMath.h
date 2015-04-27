@@ -20,6 +20,7 @@ double vectorNormv2(long *v, int dim);
 
 double innerProduct(double *x, double *y, int dim);
 double innerProductv2(long *x, double *y, int dim);
+double innerProductv3(long *x, long *y, int dim);
 
 void normalizeVector(double *v, int dim);
 void projection(double *u, double *v, double *res, int dim);

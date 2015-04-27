@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
+#include <omp.h>
 //#include <papi.h>
 
 #include "BKZ.h"
@@ -134,6 +135,7 @@ int main(int argc, const char * argv[]) {
     //Compute SVP with ENUM vector
     computeNewVector(fvec, vec, BB_);
     
+    double norm = sqrt(innerProductv3(fvec, fvec, dim));
     
     //Final Outputs
     cout << "****** ENUM VEC ******" << endl;
@@ -143,7 +145,9 @@ int main(int argc, const char * argv[]) {
     for (int i=0; i<rows; i++)
         cout << fvec[i]<< " ";
 
+    
+    cout << "\n******* NORM *******" << endl;
+    cout << norm;
     cout  << endl;
-
     return 0;
 }

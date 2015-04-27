@@ -42,7 +42,6 @@ void normalizeVector(double *v, int dim){
 }
 
 double innerProduct(double *x, double *y, int dim){
-    
     int i;
     double result=0.0;
     
@@ -59,6 +58,18 @@ double innerProductv2(long *x, double *y, int dim){
     
     for(i=0; i<dim; i++){
         result += ((double)x[i])*y[i];
+    }
+    //printf("R:%f\n",result);
+    return result;
+}
+
+double innerProductv3(long *x, long *y, int dim){
+    
+    int i;
+    double result=0.0;
+    
+    for(i=0; i<dim; i++){
+        result += ((double)x[i])*(double)y[i];
     }
     //printf("R:%f\n",result);
     return result;

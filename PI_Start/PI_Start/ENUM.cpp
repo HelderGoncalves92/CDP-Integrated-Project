@@ -5,70 +5,82 @@
 #include <iostream>
 #include <stdio.h>
 
-double cL, *cT, *y;
-int *u, *uT, *d, *delta, *v;
+double *cT, *y, *auxY;
+int *u, *uT, *d, *delta, *v, *auxUT;
 
 void initENUM(){
     //Alocate memory for every vector
     cT = (double*)_mm_malloc((dim+1) * sizeof(double), 64);
     y = (double*)_mm_malloc((dim+1) * sizeof(double), 64);
+    auxY = (double*)_mm_malloc((dim+1) * sizeof(double), 64);
     v = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
     delta = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
     d = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
     u = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
     uT = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
+    auxUT = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
 
 }
 
 
 //ENUM accordingly C. P. Schnorr && M. Euchner
 int* ENUM(int ini, int fim){
+    double cL, aux;
     int s = ini, t = ini, i;
+    int window = fim-ini+1;
+    
     
     //Init all vectors
 	cL = B[ini];
-	d[ini] = u[ini] = uT[ini] = 1;
-	y[ini] = delta[ini] = v[ini]= 0;
-
+	d[ini] = u[ini] = uT[ini] = auxUT[ini] = 1;
+	y[ini] = delta[ini] = v[ini] = auxY[ini]= 0;
 
 	for(i = ini + 1; i <= fim+1; i++){
-		cT[i] = u[i] = uT[i] = y[i] = delta[i] = v[i] = 0;
+		cT[i] = u[i] = uT[i] = y[i] = delta[i] = v[i] = auxUT[i] = auxY[i] = 0;
 		d[i] = 1;
     }
     
+    auxY[t] = y[t]*y[t];
+    auxUT[t] = uT[t]*uT[t];
+    cT[t] = cT[t + 1] + (auxY[t] - 2*uT[t]*y[t] + auxUT[t]) * B[t];
+    
+    
 	while(t <= fim){
-        
-		cT[t] = cT[t + 1] + pow(y[t] + uT[t],2) * B[t];
 
         if (cT[t] < cL){
 			if (t > ini){
 				t--;
-				y[t] = 0;
+                aux = 0;
                 
 				for (i = t + 1; i <= s; i++){
-					y[t] += uT[i] * mu[i][t];
+					aux += uT[i] * mu[i][t];
 				}
                 
-				uT[t] = v[t] = int(round(-y[t]));
-				delta[t] = 0;
-
+                y[t] = aux;
+				uT[t] = v[t] = int(round(-aux));
+                delta[t] = 0;
+                
 				if (uT[t] > -y[t]){
 					d[t] = -1;
 				}
 				else{
 					d[t] = 1;
 				}
+                
+                //Prepare cT[t] to next iteration
+                auxY[t] = y[t]*y[t];
+                auxUT[t] = uT[t]*uT[t];
+                cT[t] = cT[t + 1] + (auxY[t] - 2*uT[t]*y[t] + auxUT[t]) * B[t];
+                
 			}
 			else{
 				cL = cT[ini];
-				for (i = ini; i <= fim; i++){
-					u[i] = uT[i];
-				}
+                memcpy(&u[ini], &uT[ini], window*sizeof(int));
 			}
 		}
 		else{
 			t++;
-			s = maxn(s,t);
+			s = (s<t)?t:s; //Get max value
             
 			if(t < s){
 				delta[t] = -delta[t];
@@ -77,9 +89,14 @@ int* ENUM(int ini, int fim){
 				delta[t] += d[t];
 			}
 			uT[t] = v[t] + delta[t];
+            
+            //Prepare cT[t] to next iteration
+            auxUT[t] = uT[t]*uT[t];
+            cT[t] = cT[t + 1] + (auxY[t] - 2*uT[t]*y[t] + auxUT[t]) * B[t];
+            
 		}
 	}
 	return u;
 }
 
-
+//cT[t] = cT[t + 1] + (y[t]*y[t] - 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
