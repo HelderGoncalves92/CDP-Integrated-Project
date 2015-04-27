@@ -16,7 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
-//#include <omp.h>
+#include <omp.h>
 //#include <papi.h>
 
 #include "BKZ.h"
@@ -120,8 +120,11 @@ int main(int argc, const char * argv[]) {
     inicio=clock();
     if(PAPI_read_counters(values,NUM_EVENTS) != PAPI_OK) printf("Erro ao ler evento\n");
     */
+    double time = omp_get_wtime();
     
     int* vec = ENUM(0, dim-1);
+    
+    time = omp_get_wtime() - time;
     
     /*
     fim=clock();
@@ -149,5 +152,6 @@ int main(int argc, const char * argv[]) {
     cout << "\n******* NORM *******" << endl;
     cout << norm;
     cout  << endl;
+    cout << "Time: " << time << endl;
     return 0;
 }

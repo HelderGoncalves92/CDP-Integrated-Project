@@ -37,7 +37,7 @@ int* ENUM(int ini, int fim){
 		d[i] = 1;
     }
     
-    cT[t] = cT[t + 1] + (y[t]*y[t] - 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
+    cT[t] = cT[t + 1] + (y[t]*y[t] + 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
     
 	while(t <= fim){
 
@@ -62,7 +62,7 @@ int* ENUM(int ini, int fim){
 				}
                 
                 //Prepare cT[t] to next iteration
-                cT[t] = cT[t + 1] + (y[t]*y[t] - 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
+                cT[t] = cT[t + 1] + (y[t]*y[t] + 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
                 
 			}
 			else{
@@ -83,7 +83,7 @@ int* ENUM(int ini, int fim){
 			uT[t] = v[t] + delta[t];
             
             //Prepare cT[t] to next iteration
-            cT[t] = cT[t + 1] + (y[t]*y[t] - 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
+            cT[t] = cT[t + 1] + (y[t]*y[t] + 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
             
 		}
 	}
