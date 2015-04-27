@@ -16,7 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
-#include <omp.h>
+//#include <omp.h>
 //#include <papi.h>
 
 #include "BKZ.h"
