@@ -9,14 +9,15 @@ double *cT, *y;
 int *u, *uT, *d, *delta, *v;
 
 void initENUM(){
+    int dimesion = dim+1;
     //Alocate memory for every vector
-    cT = (double*)_mm_malloc((dim+1) * sizeof(double), 64);
-    y = (double*)_mm_malloc((dim+1) * sizeof(double), 64);
-    v = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
-    delta = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
-    d = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
-    u = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
-    uT = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
+    cT = (double*)_mm_malloc(dimesion * sizeof(double), 64);
+    y =  (double*)_mm_malloc(dimesion * sizeof(double), 64);
+    v =     (int*)_mm_malloc(dimesion * sizeof(int), 64);
+    delta = (int*)_mm_malloc(dimesion * sizeof(int), 64);
+    d =     (int*)_mm_malloc(dimesion * sizeof(int), 64);
+    u =     (int*)_mm_malloc(dimesion * sizeof(int), 64);
+    uT =    (int*)_mm_malloc(dimesion * sizeof(int), 64);
 }
 
 
@@ -37,12 +38,13 @@ int* ENUM(int ini, int fim){
 		d[i] = 1;
     }
     
-    cT[t] = cT[t + 1] + (y[t]*y[t] + 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
+   cT[t] = cT[t + 1] + (y[t]*y[t] + 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
     
 	while(t <= fim){
-
+        
         if (cT[t] < cL){
 			if (t > ini){
+                //moveUP
 				t--;
                 aux = 0;
                 
@@ -54,7 +56,7 @@ int* ENUM(int ini, int fim){
 				uT[t] = v[t] = int(round(-aux));
                 delta[t] = 0;
                 
-				if (uT[t] > -y[t]){
+				if (uT[t] > -aux){
 					d[t] = -1;
 				}
 				else{
@@ -66,11 +68,13 @@ int* ENUM(int ini, int fim){
                 
 			}
 			else{
+                //UpdateVector
 				cL = cT[ini];
                 memcpy(&u[ini], &uT[ini], window*sizeof(int));
 			}
 		}
 		else{
+            //moveDown
 			t++;
 			s = (s<t)?t:s; //Get max value
             
