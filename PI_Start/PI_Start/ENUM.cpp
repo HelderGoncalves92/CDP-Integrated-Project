@@ -5,12 +5,23 @@
 #include <iostream>
 #include <stdio.h>
 
-double *cT, *y;
+double *cT, *y, *muT, *map;
 int *u, *uT, *d, *delta, *v;
+
+
+void transposeMU(){
+    int i,j;
+    
+    for(i=1; i<dim; i++)
+        for(j=0; j<i; j++)
+            memcpy(&muT[j*dim+i], &mu[i][j], sizeof(double));
+}
 
 void initENUM(){
     int dimesion = dim+1;
     //Alocate memory for every vector
+    muT =(double*)_mm_malloc((dim*dim) * sizeof(double),64);
+    map = (double*)_mm_malloc(dim * sizeof(double), 64);
     cT = (double*)_mm_malloc(dimesion * sizeof(double), 64);
     y =  (double*)_mm_malloc(dimesion * sizeof(double), 64);
     v =     (int*)_mm_malloc(dimesion * sizeof(int), 64);
@@ -24,10 +35,10 @@ void initENUM(){
 //ENUM accordingly C. P. Schnorr && M. Euchner
 int* ENUM(int ini, int fim){
     double cL, aux;
-    int s = ini, t = ini, i;
+    int s = ini, t = ini, i, aux2;
     int window = fim-ini+1;
     
-    
+    transposeMU();
     //Init all vectors
 	cL = B[ini];
 	d[ini] = u[ini] = uT[ini] = 1;
@@ -47,10 +58,13 @@ int* ENUM(int ini, int fim){
                 //moveUP
 				t--;
                 aux = 0;
+                aux2 = t*dim;
                 
 				for (i = t + 1; i <= s; i++){
-					aux += uT[i] * mu[i][t];
+                    map[i] = uT[i] * muT[aux2+i];
 				}
+                for (i = t + 1; i <= s; i++)
+                    aux += map[i];
                 
                 y[t] = aux;
 				uT[t] = v[t] = int(round(-aux));
