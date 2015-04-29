@@ -61,6 +61,7 @@ int* ENUM(int ini, int fim){
                 aux2 = t*dim;
                 
 				for (i = t + 1; i <= s; i++){
+                    #pragma ivdep
                     map[i] = uT[i] * muT[aux2+i];
 				}
                 for (i = t + 1; i <= s; i++)
