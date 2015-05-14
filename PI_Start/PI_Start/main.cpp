@@ -15,8 +15,8 @@
 
 #include <iostream>
 #include <fstream>
-#include <time.h>
-#include <omp.h>
+//#include <time.h>
+//#include <omp.h>
 
 #include "BKZ.h"
 
@@ -97,19 +97,20 @@ int main(int argc, const char * argv[]) {
     //Init all Structs (Vectors an Matrix)
     long* fvec = (long*)calloc(cols ,sizeof(long));
     initStructsLLL(cols);
-    initENUM();
     
     //Compute all Coefficients and Norms accordingly the basis
     computeGSO(BB_);
     
+    LEnum ll = initEnum(dim);
 
-    double time = omp_get_wtime();
+    //double time = omp_get_wtime();
     //#pragma pomp inst begin(enum)
     
-    int* vec = ENUM(0, dim-1);
+    
+    int* vec = EnumSET(ll->head);
     
     //#pragma pomp inst end(enum)
-    time = omp_get_wtime() - time;
+    //time = omp_get_wtime() - time;
     
     //Compute SVP with ENUM vector
     computeNewVector(fvec, vec, BB_);

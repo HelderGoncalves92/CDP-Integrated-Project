@@ -5,92 +5,127 @@
 #include <iostream>
 #include <stdio.h>
 
-double *cT, *y;
-int *u, *uT, *d, *delta, *v;
+int *u;
+double cL;
+LEnum list = NULL;
 
-void initENUM(){
+Enum newEnumElem(int bound){
     int dimesion = dim+1;
-    //Alocate memory for every vector
-    cT = (double*)_mm_malloc(dimesion * sizeof(double), 64);
-    y =  (double*)_mm_malloc(dimesion * sizeof(double), 64);
-    v =     (int*)_mm_malloc(dimesion * sizeof(int), 64);
-    delta = (int*)_mm_malloc(dimesion * sizeof(int), 64);
-    d =     (int*)_mm_malloc(dimesion * sizeof(int), 64);
-    u =     (int*)_mm_malloc(dimesion * sizeof(int), 64);
-    uT =    (int*)_mm_malloc(dimesion * sizeof(int), 64);
+    Enum st = (Enum)_mm_malloc(sizeof(NEnum),64);
+    st->next = NULL;
+    st->bound = bound;
+    
+    st->cT = (double*)_mm_malloc(dimesion * sizeof(double), 64);
+    st->y =  (double*)_mm_malloc(dimesion * sizeof(double), 64);
+    st->v =     (int*)_mm_malloc(dimesion * sizeof(int), 64);
+    st->delta = (int*)_mm_malloc(dimesion * sizeof(int), 64);
+    st->d =     (int*)_mm_malloc(dimesion * sizeof(int), 64);
+    st->uT =    (int*)_mm_malloc(dimesion * sizeof(int), 64);
+
+    return st;
+}
+
+void initEnumElem(Enum st){
+    int i;
+    
+    //Init all vectors
+    st->d[0] = st->uT[0] = 1;
+    st->y[0] = st->delta[0] = st->v[0] = 0;
+    
+    for(i = 1; i <= st->bound; i++){
+        st->cT[i] = st->uT[i] = st->y[i] = st->delta[i] = st->v[i] = 0;
+        st->d[i] = 1;
+    }
+
+}
+
+LEnum initEnum(int bound){
+    u = (int*)_mm_malloc(dim * sizeof(int), 64);
+    cL = B[0];
+    
+    Enum first = newEnumElem(bound);
+    initEnumElem(first);
+    
+    list = (LEnum)_mm_malloc(sizeof(NLEnum), 64);
+    
+    list->count = 1;
+    list->head = list->tail = first;
+    
+    return list;
+    
 }
 
 
 //ENUM accordingly C. P. Schnorr && M. Euchner
-int* ENUM(int ini, int fim){
-    double cL, aux;
-    int s = ini, t = ini, i;
-    int window = fim-ini+1;
+int* EnumSET(Enum set){
+    
+    double aux;
+    int s = 0, t = 0, i;
+    int bound = set->bound;
     
     
-    //Init all vectors
-	cL = B[ini];
-	d[ini] = u[ini] = uT[ini] = 1;
-	y[ini] = delta[ini] = v[ini] = 0;
-
-	for(i = ini + 1; i <= fim+1; i++){
-		cT[i] = u[i] = uT[i] = y[i] = delta[i] = v[i] = 0;
-		d[i] = 1;
-    }
+   set->cT[t] = set->cT[t + 1] + (set->y[t]*set->y[t] + 2*set->uT[t]*set->y[t] + set->uT[t]*set->uT[t]) * B[t];
     
-   cT[t] = cT[t + 1] + (y[t]*y[t] + 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
-    
-	while(t <= fim){
-        
-        if (cT[t] < cL){
-			if (t > ini){
-                //moveUP
+	while(t < bound){
+        printf("%d\n",t);
+        if (set->cT[t] < cL){
+			if (t > 0){
+                //moveDown
 				t--;
                 aux = 0;
                 
 				for (i = t + 1; i <= s; i++){
-					aux += uT[i] * mu[i][t];
+					aux += set->uT[i] * mu[i][t];
 				}
                 
-                y[t] = aux;
-				uT[t] = v[t] = int(round(-aux));
-                delta[t] = 0;
+                set->y[t] = aux;
+				set->uT[t] = set->v[t] = int(round(-aux));
+                set->delta[t] = 0;
                 
-				if (uT[t] > -aux){
-					d[t] = -1;
+				if (set->uT[t] > -aux){
+					set->d[t] = -1;
 				}
 				else{
-					d[t] = 1;
+					set->d[t] = 1;
 				}
                 
                 //Prepare cT[t] to next iteration
-                cT[t] = cT[t + 1] + (y[t]*y[t] + 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
+                set->cT[t] = set->cT[t + 1] + (set->y[t]*set->y[t] + 2*set->uT[t]*set->y[t] + set->uT[t]*set->uT[t]) * B[t];
                 
 			}
 			else{
                 //UpdateVector
-				cL = cT[ini];
-                memcpy(&u[ini], &uT[ini], window*sizeof(int));
+				cL = set->cT[0];
+                memcpy(&u[0], set->uT, bound*sizeof(int));
 			}
 		}
 		else{
-            //moveDown
+            //moveUp
 			t++;
+            
 			s = (s<t)?t:s; //Get max value
             
 			if(t < s){
-				delta[t] = -delta[t];
+				set->delta[t] = -set->delta[t];
 			}
-			if(delta[t]*d[t] >= 0){
-				delta[t] += d[t];
+			if(set->delta[t]*set->d[t] >= 0){
+				set->delta[t] += set->d[t];
 			}
-			uT[t] = v[t] + delta[t];
+			set->uT[t] = set->v[t] + set->delta[t];
             
             //Prepare cT[t] to next iteration
-            cT[t] = cT[t + 1] + (y[t]*y[t] + 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
+            set->cT[t] = set->cT[t + 1] + (set->y[t]*set->y[t] + 2*set->uT[t]*set->y[t] + set->uT[t]*set->uT[t]) * B[t];
             
 		}
 	}
 	return u;
+}
+
+
+void ENUM(int nthreads, int min){
+    
+    
+    
+    
 }
 

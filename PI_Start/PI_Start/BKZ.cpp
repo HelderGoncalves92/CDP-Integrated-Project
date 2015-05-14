@@ -5,7 +5,7 @@ void initBKZ(int dimension){
     
     dim=dimension;
     
-    initENUM();
+//    initENUM();
     initStructsLLL(dimension);
 }
 
@@ -33,7 +33,7 @@ void BKZ(long** bases, int beta, double delta){
 		k = fmin(j + beta - 1, dim);
 		h = fmin(k + 1, dim);
 
-		v = ENUM(j - 1, k - 1);
+		//v = ENUM(j - 1, k - 1);
 		if (!passvec(v, j-1))
 		{
 			z = 0;

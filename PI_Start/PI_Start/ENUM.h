@@ -16,9 +16,23 @@ extern int dim;
 extern double **mu;
 extern double *B;
 
-void initENUM();
-int* ENUM(int ini, int fim);
+/******* STRUCTS *********/
+typedef struct sEnum{
+    double *cT, *y;
+    int *uT, *d, *delta, *v, bound;
+    struct sEnum *next;
+}*Enum, NEnum;
 
-int* basicENUM();
+
+typedef struct slist{
+    Enum head;
+    Enum tail;
+    int count;
+}*LEnum,NLEnum;
+
+
+LEnum initEnum(int bound);
+int* EnumSET(Enum set);
+
 
 #endif /* defined(__PI_Start__ENUM__) */
