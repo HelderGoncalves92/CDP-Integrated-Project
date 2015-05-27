@@ -31,8 +31,9 @@ typedef struct slist{
 }*LEnum,NLEnum;
 
 
-LEnum initEnum(int bound);
-int* EnumSET(Enum set);
+void initEnum();
+void EnumSET(Enum set);
+int* ENUM(int nthreads);
 
 
 #endif /* defined(__PI_Start__ENUM__) */

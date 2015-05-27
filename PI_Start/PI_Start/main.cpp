@@ -101,13 +101,15 @@ int main(int argc, const char * argv[]) {
     //Compute all Coefficients and Norms accordingly the basis
     computeGSO(BB_);
     
-    LEnum ll = initEnum(dim);
+    initEnum();
 
     //double time = omp_get_wtime();
     //#pragma pomp inst begin(enum)
     
     
-    int* vec = EnumSET(ll->head);
+    //int* vec = EnumSET(ll->head);
+    int* vec = ENUM(4);
+    
     
     //#pragma pomp inst end(enum)
     //time = omp_get_wtime() - time;
