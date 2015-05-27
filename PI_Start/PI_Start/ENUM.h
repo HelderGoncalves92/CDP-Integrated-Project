@@ -11,6 +11,7 @@
 
 #include <xmmintrin.h>
 #include "lll.h"
+#include <omp.h>
 
 extern int dim;
 extern double **mu;

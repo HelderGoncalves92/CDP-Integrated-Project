@@ -87,9 +87,14 @@ void addTail(Enum newSet){
 }
 
 Enum pop(){
-    Enum aux = list->head;
-    list->head = list->head->next;
-    list->count--;
+    Enum aux;
+    
+    #pragma omp critical
+    {
+        aux = list->head;
+        list->head = list->head->next;
+        list->count--;
+    }
  
     return aux;
 }
@@ -105,9 +110,8 @@ void EnumSETv0(Enum set){
     bound++;
     
     set->cT[t] = set->cT[t + 1] + (set->y[t]*set->y[t] + 2*set->uT[t]*set->y[t] + set->uT[t]*set->uT[t]) * B[t];
-    int cic=0;
+    
     while(t < bound){
-        cic++;
         //printVec(set);
         
         if (set->cT[t] < cL){
@@ -140,10 +144,12 @@ void EnumSETv0(Enum set){
                 //UpdateVector
                 printf("%d:UPDATE\n",s);
                 //printVec(set);
-                
-                cL = set->cT[0];
-                memcpy(&u[0], set->uT, bound*sizeof(int));
-                memcpy(&u[bound], toInit_0, (dim-bound)*sizeof(int));
+                #pragma omp critical
+                {
+                    cL = set->cT[0];
+                    memcpy(&u[0], set->uT, bound*sizeof(int));
+                    memcpy(&u[bound], toInit_0, (dim-bound)*sizeof(int));
+                }
             }
         }
         else{
@@ -166,7 +172,7 @@ void EnumSETv0(Enum set){
             
         }
     }
-    printf("cic:%d\n",cic);
+    printf("Fim:%d\n",bound);
 }
 
 //ENUM accordingly C. P. Schnorr && M. Euchner
@@ -178,9 +184,8 @@ void EnumSETv1(Enum set){
     bound++;
     
     set->cT[t] = set->cT[t + 1] + (set->y[t]*set->y[t] + 2*set->uT[t]*set->y[t] + set->uT[t]*set->uT[t]) * B[t];
-    int cic=0;
+    
 	while(t < bound){
-        cic++;
         //printVec(set);
         
         if (set->cT[t] < cL){
@@ -214,9 +219,12 @@ void EnumSETv1(Enum set){
                 printf("%d:UPDATE\n",s);
                 //printVec(set);
                 
-				cL = set->cT[0];
-                memcpy(&u[0], set->uT, bound*sizeof(int));
-                memcpy(&u[bound], toInit_0, (dim-bound)*sizeof(int));
+                #pragma omp critical
+                {
+                    cL = set->cT[0];
+                    memcpy(&u[0], set->uT, bound*sizeof(int));
+                    memcpy(&u[bound], toInit_0, (dim-bound)*sizeof(int));
+                }
 			}
 		}
 		else{
@@ -239,28 +247,32 @@ void EnumSETv1(Enum set){
             
 		}
 	}
-    //printf("cic:%d\n",cic);
+    printf("Fim:%d\n",bound);
 }
 
 
 int* ENUM(int nthreads){
     
-    int i, MAX_DEPTH = 30;
+    int i,n=1, MAX_DEPTH = 43;
     Enum set = NULL;
     
     for(i=dim; i>MAX_DEPTH; i--){
         set = newEnumElem(i, 0, 1);
         addTail(set);
+        n++;
     }
     set = newEnumElem(i, 0, 0);
     addTail(set);
     
-    while (list->count!=0) {
-        set = pop();
-        if(set->type==0)
-            EnumSETv0(set);
-        else
-            EnumSETv1(set);
+    
+    #pragma omp parallel for private(set) schedule(dynamic,1)
+    for(i=0; i<n; i++){
+        
+            set = pop();
+            if(set->type==0)
+                EnumSETv0(set);
+            else
+                EnumSETv1(set);
     }
     
     return u;
