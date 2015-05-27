@@ -16,7 +16,7 @@
 #include <iostream>
 #include <fstream>
 //#include <time.h>
-//#include <omp.h>
+#include <omp.h>
 
 #include "BKZ.h"
 
@@ -103,7 +103,7 @@ int main(int argc, const char * argv[]) {
     
     initEnum();
 
-    //double time = omp_get_wtime();
+    double time = omp_get_wtime();
     //#pragma pomp inst begin(enum)
     
     
@@ -112,7 +112,7 @@ int main(int argc, const char * argv[]) {
     
     
     //#pragma pomp inst end(enum)
-    //time = omp_get_wtime() - time;
+    time = omp_get_wtime() - time;
     
     //Compute SVP with ENUM vector
     computeNewVector(fvec, vec, BB_);

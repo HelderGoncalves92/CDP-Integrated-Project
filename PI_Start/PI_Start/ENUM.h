@@ -19,7 +19,7 @@ extern double *B;
 /******* STRUCTS *********/
 typedef struct sEnum{
     double *cT, *y;
-    int *uT, *d, *delta, *v, bound;
+    int *uT, *d, *delta, *v, bound, type;
     struct sEnum *next;
 }*Enum, NEnum;
 
@@ -32,7 +32,6 @@ typedef struct slist{
 
 
 void initEnum();
-void EnumSET(Enum set);
 int* ENUM(int nthreads);
 
 
