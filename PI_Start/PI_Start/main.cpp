@@ -101,18 +101,18 @@ int main(int argc, const char * argv[]) {
     //Compute all Coefficients and Norms accordingly the basis
     computeGSO(BB_);
     
-    initEnum();
+    initEnum(1);
 
-    double time = omp_get_wtime();
+    //double time = omp_get_wtime();
     //#pragma pomp inst begin(enum)
     
     
     //int* vec = EnumSET(ll->head);
-    int* vec = ENUM(4);
+    int* vec = ENUM();
     
     
     //#pragma pomp inst end(enum)
-    time = omp_get_wtime() - time;
+   // time = omp_get_wtime() - time;
     
     //Compute SVP with ENUM vector
     computeNewVector(fvec, vec, BB_);

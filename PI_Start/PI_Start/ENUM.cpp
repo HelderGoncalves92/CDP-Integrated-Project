@@ -5,72 +5,97 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
-int *u, *toInit_0,*toInit_1,*toInit_d0;
-double cL;
+int nthreads;
+int *u, **uT, **d, **delta, **v;
+double **cT, **y, cL;
 LEnum list = NULL;
 
+pthread_mutex_t u_Mutex, toPop_Mutex;
 
-void printVec(Enum st);
-void initEnum(){
+
+void printVec(int bound, int id);
+
+void initEnum(int n_threads){
+    int i, auxDim = dim+1;
+    nthreads = n_threads;
     
     //Allocate memory
     u = (int*)_mm_malloc(dim*sizeof(NLEnum), 64);
-    toInit_0 = (int*)_mm_malloc((dim+1)*sizeof(int), 64);
-    toInit_1 = (int*)_mm_malloc((dim+1)*sizeof(int), 64);
-    toInit_d0 = (int*)_mm_malloc((dim+1)*sizeof(double), 64);
-    
     list = (LEnum)_mm_malloc(sizeof(NLEnum), 64);
+    
     list->count = 0;
     list->head = list->tail = NULL;;
     
-    //Fill toInit with '0' or '1'
-    for(int i=0; i<=dim; i++){
-        toInit_0[i] = 0;
-        toInit_1[i] = 1;
-        toInit_d0[i] = 0;
+    //Fill u with the shortest vector
+    for(int i=1; i<=dim; i++)
+        u[i] = 0;
+    
+    cL = B[0];
+    u[0]=1;
+    
+    //Prepare memory to each thread
+    delta = (int**)_mm_malloc(n_threads*sizeof(int*), 64);
+    uT = (int**)_mm_malloc(n_threads*sizeof(int*), 64);
+    d = (int**)_mm_malloc(n_threads*sizeof(int*), 64);
+    v = (int**)_mm_malloc(n_threads*sizeof(int*), 64);
+    cT = (double**)_mm_malloc(n_threads*sizeof(double*), 64);
+    y = (double**)_mm_malloc(n_threads*sizeof(double*), 64);
+    
+    for(i=0; i<n_threads; i++){
+        delta[i] = (int*)_mm_malloc(auxDim*sizeof(int), 64);
+        uT[i] = (int*)_mm_malloc(auxDim*sizeof(int), 64);
+        d[i] = (int*)_mm_malloc(auxDim*sizeof(int), 64);
+        v[i] = (int*)_mm_malloc(auxDim*sizeof(int), 64);
+        cT[i] = (double*)_mm_malloc(auxDim*sizeof(double), 64);
+        y[i] = (double*)_mm_malloc(auxDim*sizeof(double), 64);
     }
     
-    memcpy(&u[0], toInit_0, dim*sizeof(int));
-    u[0]=1;
-    cL = B[0];
+    //Prepare to Pthreads
+    pthread_mutex_init(&u_Mutex, NULL);
+    pthread_mutex_init(&toPop_Mutex, NULL);
+}
+
+void startSet(int id, int bound, int sibling, int type){
+    int i;
+    
+    //Clean vectors from preciously executions
+    for(i=0; i<=bound; i++)
+        y[id][i] = 0.0;
+    
+    for(i=0; i<=bound; i++)
+        delta[id][i] = 0;
+    for(i=0; i<=bound; i++)
+        d[id][i] = 1;
+    for(i=0; i<=bound; i++)
+        v[id][i] = 0;
+    for(i=0; i<=bound; i++)
+        uT[id][i] = 0;
+    
+    
+    //Prepare to start by type
+    if(type == 1){
+        memcpy(cT[id], B, bound*sizeof(double));
+        
+        cT[id][bound] = 0.0;
+        uT[id][bound-1] = 1;
+    }else{
+        uT[id][0] = 1;
+        for(i=0; i<=bound; i++)
+            cT[id][i] = 0.0;
+    }
+    
 }
 
 
-Enum newEnumElem(int bound, int simbling, int type){
-    int dimesion = bound+1;
+Enum newEnumElem(int bound, int sibling, int type){
     Enum st = (Enum)_mm_malloc(sizeof(NEnum),64);
     st->next = NULL;
     st->bound = bound-1;
     st->type = type;
-    
-    st->cT = (double*)_mm_malloc(dimesion * sizeof(double), 64);
-    st->y =  (double*)_mm_malloc(dimesion * sizeof(double), 64);
-    st->v =     (int*)_mm_malloc(dimesion * sizeof(int), 64);
-    st->delta = (int*)_mm_malloc(dimesion * sizeof(int), 64);
-    st->d =     (int*)_mm_malloc(dimesion * sizeof(int), 64);
-    st->uT =    (int*)_mm_malloc(dimesion * sizeof(int), 64);
-    
-    //Fill vectors
-    memcpy(st->v, toInit_0, dimesion*sizeof(int));
-    memcpy(st->delta, toInit_0, dimesion*sizeof(int));
-    memcpy(st->uT, toInit_0, dimesion*sizeof(int));
-    memcpy(st->d, toInit_1, dimesion*sizeof(int));
-    
-    memcpy(st->y, toInit_d0, dimesion*sizeof(double));
-    
-    if(type == 1){
-        memcpy(st->cT, B, dimesion*sizeof(double));
+    st->sibling = sibling;
 
-        //Prepare to start
-        st->cT[bound]=0.0;
-        st->uT[bound-1] = 1;
-    }else{
-        memcpy(st->cT, toInit_d0, dimesion*sizeof(double));
-        
-        //Prepare to start
-        st->uT[0] = 1;
-    }
     return st;
 }
 
@@ -83,18 +108,20 @@ void addTail(Enum newSet){
         list->head = list->tail = newSet;
         list->count=1;
     }
-        
 }
 
 Enum pop(){
     Enum aux;
     
-    #pragma omp critical
-    {
-        aux = list->head;
-        list->head = list->head->next;
-        list->count--;
-    }
+    //Lock critical zone
+    pthread_mutex_lock(&toPop_Mutex);
+    
+    aux = list->head;
+    list->head = list->head->next;
+    list->count--;
+    
+    //Unlock critical zone
+    pthread_mutex_unlock(&toPop_Mutex);
  
     return aux;
 }
@@ -102,160 +129,110 @@ Enum pop(){
 
 
 //ENUM accordingly C. P. Schnorr && M. Euchner
-void EnumSETv0(Enum set){
+void EnumSET(Enum set, int id){
     
     double aux;
+    int s, t, i;
     int bound = set->bound;
-    int s = 0, t = 0, i;
-    bound++;
     
-    set->cT[t] = set->cT[t + 1] + (set->y[t]*set->y[t] + 2*set->uT[t]*set->y[t] + set->uT[t]*set->uT[t]) * B[t];
+    startSet(id, bound, set->sibling, set->type);
+    if(set->type == 0){
+        s = t = 0;
+    }else{
+        s = t = bound;
+    }
+    bound++;
+        printVec(bound-1, id);
+    cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
     
     while(t < bound){
-        //printVec(set);
+       // printVec(bound-1, id);
         
-        if (set->cT[t] < cL){
+        if (cT[id][t] < cL){
             if (t > 0){
                 //moveDown
-                //       printf("%d:DOWN\n",t);
                 t--;
                 aux = 0;
                 
                 for (i = t + 1; i <= s; i++){
-                    aux += set->uT[i] * mu[i][t];
+                    aux += uT[id][i] * mu[i][t];
                 }
                 
-                set->y[t] = aux;
-                set->uT[t] = set->v[t] = int(round(-aux));
-                set->delta[t] = 0;
+                y[id][t] = aux;
+                uT[id][t] = v[id][t] = int(round(-aux));
+                delta[id][t] = 0;
                 
-                if (set->uT[t] > -aux){
-                    set->d[t] = -1;
+                if (uT[id][t] > -aux){
+                    d[id][t] = -1;
                 }
                 else{
-                    set->d[t] = 1;
+                    d[id][t] = 1;
                 }
                 
                 //Prepare cT[t] to next iteration
-                set->cT[t] = set->cT[t + 1] + (set->y[t]*set->y[t] + 2*set->uT[t]*set->y[t] + set->uT[t]*set->uT[t]) * B[t];
+                cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
                 
             }
             else{
                 //UpdateVector
                 printf("%d:UPDATE\n",s);
                 //printVec(set);
-                #pragma omp critical
-                {
-                    cL = set->cT[0];
-                    memcpy(&u[0], set->uT, bound*sizeof(int));
-                    memcpy(&u[bound], toInit_0, (dim-bound)*sizeof(int));
-                }
+                
+                //Lock critical zone
+                pthread_mutex_lock(&u_Mutex);
+                    cL = cT[id][0];
+                    memcpy(&u[0], uT[id], bound*sizeof(int));
+                    for(i=bound; i<dim; i++)
+                        u[i] = 0;
+                
+                //Unlock critical zone
+                pthread_mutex_unlock(&u_Mutex);
             }
         }
         else{
             //moveUp
-            //    printf("%d:UP\n",t);
             t++;
             
             s = (s<t)?t:s; //Get max value
             
             if(t < s){
-                set->delta[t] = -set->delta[t];
+                delta[id][t] = -delta[id][t];
             }
-            if(set->delta[t]*set->d[t] >= 0){
-                set->delta[t] += set->d[t];
+            if(delta[id][t]*d[id][t] >= 0){
+                delta[id][t] += d[id][t];
             }
-            set->uT[t] = set->v[t] + set->delta[t];
+            uT[id][t] = v[id][t] + delta[id][t];
             
             //Prepare cT[t] to next iteration
-            set->cT[t] = set->cT[t + 1] + (set->y[t]*set->y[t] + 2*set->uT[t]*set->y[t] + set->uT[t]*set->uT[t]) * B[t];
+            cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
             
         }
     }
     printf("Fim:%d\n",bound);
 }
 
-//ENUM accordingly C. P. Schnorr && M. Euchner
-void EnumSETv1(Enum set){
+void* threadHander(void* vID){
     
-    double aux;
-    int bound = set->bound;
-    int s = bound, t = bound, i;
-    bound++;
+    int id = *((int *) vID);
+    Enum set = newEnumElem(5, 0, 1);
     
-    set->cT[t] = set->cT[t + 1] + (set->y[t]*set->y[t] + 2*set->uT[t]*set->y[t] + set->uT[t]*set->uT[t]) * B[t];
+   // while (list->count>0) {
+     //   set = pop();
+        printf("%d - %d\n",id, set->bound);
+        EnumSET(set, id);
+   // }
     
-	while(t < bound){
-        //printVec(set);
-        
-        if (set->cT[t] < cL){
-			if (t > 0){
-                //moveDown
-         //       printf("%d:DOWN\n",t);
-				t--;
-                aux = 0;
-                
-				for (i = t + 1; i <= s; i++){
-					aux += set->uT[i] * mu[i][t];
-				}
-                
-                set->y[t] = aux;
-				set->uT[t] = set->v[t] = int(round(-aux));
-                set->delta[t] = 0;
-                
-				if (set->uT[t] > -aux){
-					set->d[t] = -1;
-				}
-				else{
-					set->d[t] = 1;
-				}
-                
-                //Prepare cT[t] to next iteration
-                set->cT[t] = set->cT[t + 1] + (set->y[t]*set->y[t] + 2*set->uT[t]*set->y[t] + set->uT[t]*set->uT[t]) * B[t];
-                
-			}
-			else{
-                //UpdateVector
-                printf("%d:UPDATE\n",s);
-                //printVec(set);
-                
-                #pragma omp critical
-                {
-                    cL = set->cT[0];
-                    memcpy(&u[0], set->uT, bound*sizeof(int));
-                    memcpy(&u[bound], toInit_0, (dim-bound)*sizeof(int));
-                }
-			}
-		}
-		else{
-            //moveUp
-        //    printf("%d:UP\n",t);
-			t++;
-            
-			s = (s<t)?t:s; //Get max value
-            
-			if(t < s){
-				set->delta[t] = -set->delta[t];
-			}
-			if(set->delta[t]*set->d[t] >= 0){
-				set->delta[t] += set->d[t];
-			}
-			set->uT[t] = set->v[t] + set->delta[t];
-            
-            //Prepare cT[t] to next iteration
-            set->cT[t] = set->cT[t + 1] + (set->y[t]*set->y[t] + 2*set->uT[t]*set->y[t] + set->uT[t]*set->uT[t]) * B[t];
-            
-		}
-	}
-    printf("Fim:%d\n",bound);
+    
+    return NULL;
 }
 
 
-int* ENUM(int nthreads){
+int* ENUM(){
     
-    int i,n=1, MAX_DEPTH = 43;
+    int i, n=1, MAX_DEPTH = dim*0.7;
     Enum set = NULL;
     
+    //Prepare list with tasks
     for(i=dim; i>MAX_DEPTH; i--){
         set = newEnumElem(i, 0, 1);
         addTail(set);
@@ -265,52 +242,73 @@ int* ENUM(int nthreads){
     addTail(set);
     
     
-    #pragma omp parallel for private(set) schedule(dynamic,1)
-    for(i=0; i<n; i++){
-        
-            set = pop();
-            if(set->type==0)
-                EnumSETv0(set);
-            else
-                EnumSETv1(set);
+    pthread_t tHandles[nthreads];
+    
+    //Threads Start
+    for (i = 0; i < nthreads; i++) {
+        int *threadNum = (int*)malloc(sizeof (int));
+        *threadNum = i;
+        pthread_create(&tHandles[i], NULL, threadHander, (void *)threadNum);
+
     }
     
+    
+    //Threads Join
+    for (i = 0; i < nthreads; i++)
+        pthread_join(tHandles[i], NULL);
+    
+    /*
+    for(i=dim; i>MAX_DEPTH; i--){
+        set = newEnumElem(i, 0, 1);
+        addTail(set);
+        n++;
+    }
+    set = newEnumElem(i, 0, 0);
+    addTail(set);
+    
+    
+    #pragma omp parallel for private(set)
+    for(i=0; i<n; i++){
+        set = pop();
+        EnumSET(set, 0);
+    }
+    */
     return u;
 }
 
 
-void printVec(Enum st){
+void printVec(int bound, int id){
     int i;
     
-    int dimension = st->bound+1;
+    int dimension = bound+1;
     
     printf("uT:");
     for(i=0; i<dimension; i++)
-        printf("%d ",st->uT[i]);
+        printf("%d ",uT[id][i]);
     printf("\n");
     
     printf("d:");
     for(i=0; i<dimension; i++)
-        printf("%d ",st->d[i]);
+        printf("%d ",d[id][i]);
     printf("\n");
     
     printf("delta:");
     for(i=0; i<dimension; i++)
-        printf("%d ",st->delta[i]);
+        printf("%d ",delta[id][i]);
     printf("\n");
     
     printf("v:");
     for(i=0; i<dimension; i++)
-        printf("%d ",st->v[i]);
+        printf("%d ",v[id][i]);
     printf("\n");
     
     printf("cT:");
     for(i=0; i<dimension; i++)
-        printf("%.2f ",st->cT[i]);
+        printf("%.2f ",cT[id][i]);
     printf("\n");
     printf("Y:");
     for(i=0; i<dimension; i++)
-        printf("%.2f ",st->y[i]);
+        printf("%.2f ",y[id][i]);
     printf("\n");
     
     printf("\n");

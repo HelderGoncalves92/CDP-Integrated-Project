@@ -11,7 +11,7 @@
 
 #include <xmmintrin.h>
 #include "lll.h"
-#include <omp.h>
+
 
 extern int dim;
 extern double **mu;
@@ -19,8 +19,7 @@ extern double *B;
 
 /******* STRUCTS *********/
 typedef struct sEnum{
-    double *cT, *y;
-    int *uT, *d, *delta, *v, bound, type;
+    int bound, type, sibling;
     struct sEnum *next;
 }*Enum, NEnum;
 
@@ -32,8 +31,8 @@ typedef struct slist{
 }*LEnum,NLEnum;
 
 
-void initEnum();
-int* ENUM(int nthreads);
+void initEnum(int nthreads);
+int* ENUM();
 
 
 #endif /* defined(__PI_Start__ENUM__) */
