@@ -101,7 +101,7 @@ int main(int argc, const char * argv[]) {
     //Compute all Coefficients and Norms accordingly the basis
     computeGSO(BB_);
     
-    initEnum(1);
+    initEnum(4);
 
     //double time = omp_get_wtime();
     //#pragma pomp inst begin(enum)

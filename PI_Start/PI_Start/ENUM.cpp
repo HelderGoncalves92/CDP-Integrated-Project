@@ -135,14 +135,14 @@ void EnumSET(Enum set, int id){
     int s, t, i;
     int bound = set->bound;
     
-    startSet(id, bound, set->sibling, set->type);
+    startSet(id, bound+1, set->sibling, set->type);
     if(set->type == 0){
         s = t = 0;
     }else{
         s = t = bound;
     }
     bound++;
-        printVec(bound-1, id);
+        //printVec(bound-1, id);
     cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
     
     while(t < bound){
@@ -214,13 +214,13 @@ void EnumSET(Enum set, int id){
 void* threadHander(void* vID){
     
     int id = *((int *) vID);
-    Enum set = newEnumElem(5, 0, 1);
+    Enum set = NULL;//newEnumElem(49, 0, 1);
     
-   // while (list->count>0) {
-     //   set = pop();
+    while (list->count>0) {
+        set = pop();
         printf("%d - %d\n",id, set->bound);
         EnumSET(set, id);
-   // }
+    }
     
     
     return NULL;
