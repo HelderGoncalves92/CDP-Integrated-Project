@@ -80,6 +80,11 @@ void startSet(int id, int bound, int sibling, int type){
         
         cT[id][bound] = 0.0;
         uT[id][bound-1] = 1;
+        uT[id][0] = 1;
+        
+        for(i=bound-1; i>=0; i--){
+            cT[id][i] = cT[id][i + 1] + (y[id][i]*y[id][i] + 2*uT[id][i]*y[id][i] + uT[id][i]*uT[id][i]) * B[i];
+        }
     }else{
         uT[id][0] = 1;
         for(i=0; i<=bound; i++)
@@ -140,13 +145,16 @@ void EnumSET(Enum set, int id){
         s = t = 0;
     }else{
         s = t = bound;
+        s = t = 0;
     }
     bound++;
         //printVec(bound-1, id);
     cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
     
     while(t < bound){
-       // printVec(bound-1, id);
+        //printVec(bound-1, id);
+        //if(id==0)
+        //printVec(dim, id);
         
         if (cT[id][t] < cL){
             if (t > 0){
