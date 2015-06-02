@@ -76,21 +76,19 @@ void startSet(int id, int bound, int sibling, int type){
     
     //Prepare to start by type
     if(type == 1){
-        memcpy(cT[id], B, bound*sizeof(double));
-        
         cT[id][bound] = 0.0;
+        cT[id][bound-1] = B[bound-1];
         uT[id][bound-1] = 1;
         uT[id][0] = 1;
         
-        for(i=bound-1; i>=0; i--){
+        for(i=bound-1; i>=0; i--)
             cT[id][i] = cT[id][i + 1] + (y[id][i]*y[id][i] + 2*uT[id][i]*y[id][i] + uT[id][i]*uT[id][i]) * B[i];
-        }
+        
     }else{
         uT[id][0] = 1;
         for(i=0; i<=bound; i++)
             cT[id][i] = 0.0;
     }
-    
 }
 
 
@@ -141,20 +139,12 @@ void EnumSET(Enum set, int id){
     int bound = set->bound;
     
     startSet(id, bound+1, set->sibling, set->type);
-    if(set->type == 0){
-        s = t = 0;
-    }else{
-        s = t = bound;
-        s = t = 0;
-    }
+    s = t = 0;
+
     bound++;
-        //printVec(bound-1, id);
     cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
     
     while(t < bound){
-        //printVec(bound-1, id);
-        //if(id==0)
-        //printVec(dim, id);
         
         if (cT[id][t] < cL){
             if (t > 0){
@@ -200,7 +190,6 @@ void EnumSET(Enum set, int id){
         else{
             //moveUp
             t++;
-            
             s = (s<t)?t:s; //Get max value
             
             if(t < s){
@@ -222,15 +211,14 @@ void EnumSET(Enum set, int id){
 void* threadHander(void* vID){
     
     int id = *((int *) vID);
-    Enum set = NULL;//newEnumElem(49, 0, 1);
+    Enum set = NULL;
     
     while (list->count>0) {
         set = pop();
         printf("%d - %d\n",id, set->bound);
         EnumSET(set, id);
     }
-    
-    
+
     return NULL;
 }
 
@@ -265,22 +253,6 @@ int* ENUM(){
     for (i = 0; i < nthreads; i++)
         pthread_join(tHandles[i], NULL);
     
-    /*
-    for(i=dim; i>MAX_DEPTH; i--){
-        set = newEnumElem(i, 0, 1);
-        addTail(set);
-        n++;
-    }
-    set = newEnumElem(i, 0, 0);
-    addTail(set);
-    
-    
-    #pragma omp parallel for private(set)
-    for(i=0; i<n; i++){
-        set = pop();
-        EnumSET(set, 0);
-    }
-    */
     return u;
 }
 
