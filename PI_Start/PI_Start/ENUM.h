@@ -19,7 +19,7 @@ extern double *B;
 
 /******* STRUCTS *********/
 typedef struct sEnum{
-    int bound, type, sibling;
+    int bound, type, sibling, level;
     struct sEnum *next;
 }*Enum, NEnum;
 

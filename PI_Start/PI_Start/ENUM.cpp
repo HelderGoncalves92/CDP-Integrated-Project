@@ -57,8 +57,8 @@ void initEnum(int n_threads){
     pthread_mutex_init(&toPop_Mutex, NULL);
 }
 
-void startSet(int id, int bound, int sibling, int type){
-    int i;
+void startSet(int id, Enum set){
+    int i, bound = set->bound+1;
     
     //Clean vectors from preciously executions
     for(i=0; i<=bound; i++)
@@ -75,7 +75,7 @@ void startSet(int id, int bound, int sibling, int type){
     
     
     //Prepare to start by type
-    if(type == 1){
+    if(set->type == 1){
         cT[id][bound] = 0.0;
         cT[id][bound-1] = B[bound-1];
         uT[id][bound-1] = 1;
@@ -84,20 +84,34 @@ void startSet(int id, int bound, int sibling, int type){
         for(i=bound-1; i>=0; i--)
             cT[id][i] = cT[id][i + 1] + (y[id][i]*y[id][i] + 2*uT[id][i]*y[id][i] + uT[id][i]*uT[id][i]) * B[i];
         
-    }else{
-        uT[id][0] = 1;
-        for(i=0; i<=bound; i++)
-            cT[id][i] = 0.0;
+    } else
+        if(set->type == 2){
+            cT[id][bound] = 0.0;
+            cT[id][bound-1] = B[bound-1];
+            uT[id][bound-1] = 1;
+            uT[id][0] = 1;
+            uT[id][bound-2] = set->sibling;
+            
+            
+            for(i=bound-1; i>=0; i--)
+                cT[id][i] = cT[id][i + 1] + (y[id][i]*y[id][i] + 2*uT[id][i]*y[id][i] + uT[id][i]*uT[id][i]) * B[i];
+           // set->bound--;
+            
+        } else{
+            uT[id][0] = 1;
+            for(i=0; i<=bound; i++)
+                cT[id][i] = 0.0;
     }
 }
 
 
-Enum newEnumElem(int bound, int sibling, int type){
+Enum newEnumElem(int bound, int sibling, int type, int level){
     Enum st = (Enum)_mm_malloc(sizeof(NEnum),64);
     st->next = NULL;
     st->bound = bound-1;
     st->type = type;
     st->sibling = sibling;
+    st->level = level;
 
     return st;
 }
@@ -136,15 +150,15 @@ void EnumSET(Enum set, int id){
     
     double aux;
     int s, t, i;
-    int bound = set->bound;
+    int toCopy = set->bound + 1;
     
-    startSet(id, bound+1, set->sibling, set->type);
+    startSet(id, set);
     s = t = 0;
 
-    bound++;
+    int bound = set->bound;
     cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
     
-    while(t < bound){
+    while(t <= bound){
         
         if (cT[id][t] < cL){
             if (t > 0){
@@ -179,8 +193,8 @@ void EnumSET(Enum set, int id){
                 //Lock critical zone
                 pthread_mutex_lock(&u_Mutex);
                     cL = cT[id][0];
-                    memcpy(&u[0], uT[id], bound*sizeof(int));
-                    for(i=bound; i<dim; i++)
+                    memcpy(&u[0], uT[id], toCopy*sizeof(int));
+                    for(i=toCopy; i<dim; i++)
                         u[i] = 0;
                 
                 //Unlock critical zone
@@ -229,12 +243,21 @@ int* ENUM(){
     Enum set = NULL;
     
     //Prepare list with tasks
-    for(i=dim; i>MAX_DEPTH; i--){
-        set = newEnumElem(i, 0, 1);
+    for(i=dim-1; i>MAX_DEPTH; i--){
+        set = newEnumElem(i, 87, 2, 1);
         addTail(set);
         n++;
+        /*set = newEnumElem(i, 1, 2, 1);
+        addTail(set);
+        n++;
+        set = newEnumElem(i, -1, 2, 1);
+        addTail(set);
+        n++;
+        set = newEnumElem(i, -2, 1, 1);
+        addTail(set);
+        n++;*/
     }
-    set = newEnumElem(i, 0, 0);
+    set = newEnumElem(i, 1, 0,1);
     addTail(set);
     
     
