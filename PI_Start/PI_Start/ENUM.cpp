@@ -143,41 +143,76 @@ int startSet(int id, Enum set){
             */
             int t=bound-2;
             //printVec(dim, id);
-            
-            while(t>=(bound-set->level-1)){
-                moveDown(id, t, bound-1);
-                if(t == (bound-set->level-1)){
+
+            if(set->vec != NULL){
+                
+                int j=0;
+                while(t>=(bound-set->level-1)){
+                    moveDown(id, t, bound-1);
                     
-                    while(uT[id][t] != set->sibling){
+                    if(cT[id][t] > cL){
+                        printf("%d:Lower cL |Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
+                        return 1;
+                    }
+                        
+                    while(uT[id][t] != set->vec[j]){
                         
                         moveUP(id, t, bound-1);
-                        if(abs(uT[id][t]) > abs(set->sibling)){
+                        if(abs(uT[id][t]) > abs(set->vec[j])){
                             printf("%d:ERRO (Jump Sib) Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
                             return 1;
                         }
                     }
                     
-                } else if(uT[id][t] != 0){
-                    printf("%d:ERRO (Not '0') Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
-                    printVec(dim, id);
-
-                    return 1;
+                    
+                    t--;
+                    j++;
                 }
-                
-                t--;
+            
+            }else{
+            
+                while(t>=(bound-set->level-1)){
+                    moveDown(id, t, bound-1);
+                    
+                    if(cT[id][t] > cL){
+                        printf("%d:Lower cL |Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
+                        return 1;
+                    }
+                    
+                    if(t == (bound-set->level-1)){
+                        
+                        while(uT[id][t] != set->sibling){
+                            
+                            moveUP(id, t, bound-1);
+                            if(abs(uT[id][t]) > abs(set->sibling)){
+                                printf("%d:ERRO (Jump Sib) Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
+                                return 1;
+                            }
+                        }
+                        
+                    } else if(uT[id][t] != 0){
+                        printf("%d:ERRO (Not '0') Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
+                        printVec(dim, id);
+
+                        return 1;
+                    }
+                    
+                    t--;
+                }
             }
         }
     return 0;
 }
 
 
-Enum newEnumElem(int bound, int sibling, int type, int level){
+Enum newEnumElem(int bound, int sibling, int type, int level, int *vec){
     Enum st = (Enum)_mm_malloc(sizeof(NEnum),64);
     st->next = NULL;
     st->bound = bound-1;
     st->type = type;
     st->sibling = sibling;
     st->level = level;
+    st->vec = vec;
 
     return st;
 }
@@ -224,7 +259,7 @@ void EnumSET(Enum set, int id){
     
     if(startSet(id, set))
         return;
-    //printVec(dim, id);
+  //  printVec(dim, id);
 
     //Start on leaf (like Schnorr)
     if(set->type==0){
@@ -319,7 +354,12 @@ void* threadHander(void* vID){
     int id = *((int *) vID);
     Enum set = NULL;
 
- /* set = newEnumElem(49, 0, 2, 4);
+    int* vec = (int*)_mm_malloc(4*sizeof(int), 64);
+    vec[0]=-1;
+    vec[1]= 1;
+    vec[2]= 0;
+/*
+    set = newEnumElem(49, 1, 3, 3, vec);
     
     if(id==0){
      EnumSET(set, id);
@@ -345,14 +385,14 @@ void creatTasks(int bound, int level){
 
     for(i=1; i<=level; i++){
 
-        set = newEnumElem(bound, 1, 3, i);
+        set = newEnumElem(bound, 1, 3, i, NULL);
         addTail(set);
-        set = newEnumElem(bound, -1, 3, i);
+        set = newEnumElem(bound, -1, 3, i, NULL);
         addTail(set);
-        set = newEnumElem(bound, 2, 2, i);
+        set = newEnumElem(bound, 2, 2, i, NULL);
         addTail(set);
     }
-    set = newEnumElem(bound, 0, 2, i);
+    set = newEnumElem(bound, 0, 2, i, NULL);
     addTail(set);
 }
 
@@ -368,27 +408,27 @@ int* ENUM(){
     
     
     for(i=dim-4; i>50; i--){
-        set = newEnumElem(i, 0, 3, 1);
+        set = newEnumElem(i, 0, 3, 1, NULL);
         addTail(set);
         n++;
-        set = newEnumElem(i, 1, 3, 1);
+        set = newEnumElem(i, 1, 3, 1, NULL);
         addTail(set);
         n++;
-        set = newEnumElem(i, -1, 3, 1);
+        set = newEnumElem(i, -1, 3, 1, NULL);
         addTail(set);
         n++;
-        set = newEnumElem(i, 2, 2, 1);
+        set = newEnumElem(i, 2, 2, 1, NULL);
         addTail(set);
         n++;
     }
     
     //Prepare list with tasks
     for(; i>MAX_DEPTH; i--){
-        set = newEnumElem(i, 1, 1, 1);
+        set = newEnumElem(i, 1, 1, 1, NULL);
         addTail(set);
         n++;
     }
-    set = newEnumElem(i, 1, 0, 1);
+    set = newEnumElem(i, 1, 0, 1, NULL);
     addTail(set);
     
     
@@ -413,7 +453,7 @@ int* ENUM(){
 void printVec(int bound, int id){
     int i;
     
-    int dimension = bound+1;
+    int dimension = bound;
     
     printf("uT:");
     for(i=0; i<dimension; i++)
