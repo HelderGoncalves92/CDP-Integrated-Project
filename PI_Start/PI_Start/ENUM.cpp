@@ -142,10 +142,10 @@ int startSet(int id, Enum set){
                 cT[id][i] = cT[id][i + 1] + (y[id][i]*y[id][i] + 2*uT[id][i]*y[id][i] + uT[id][i]*uT[id][i]) * B[i];
             */
             int t=bound-2;
+            //printVec(dim, id);
             
             while(t>=(bound-set->level-1)){
                 moveDown(id, t, bound);
-                
                 if(t == (bound-set->level-1)){
                     
                     while(uT[id][t] != set->sibling){
@@ -159,6 +159,8 @@ int startSet(int id, Enum set){
                     
                 } else if(uT[0][t] != 0){
                     printf("%d:ERRO (Not '0') Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
+                    printVec(dim, id);
+
                     return 1;
                 }
                 
@@ -254,7 +256,7 @@ void EnumSET(Enum set, int id){
             if (t > 0){
                 //moveDown
                 t--;
-                aux = 0;
+                aux = 0.0;
                 
                 for (i = t + 1; i <= s; i++){
                     aux += uT[id][i] * mu[i][t];
@@ -316,14 +318,14 @@ void* threadHander(void* vID){
     
     int id = *((int *) vID);
     Enum set = NULL;
-/*
-    set = newEnumElem(49, 0, 1, 2);
+
+    set = newEnumElem(49, 1, 3, 9);
     
     if(id==0){
      EnumSET(set, id);
-        printVec(dim, id);
+       // printVec(dim, id);
     }
-*/
+/*
     while (list->count>0) {
         set = pop();
         if(set){
@@ -331,7 +333,7 @@ void* threadHander(void* vID){
             EnumSET(set, id);
         }
     }
-
+*/
     return NULL;
 }
 
@@ -441,4 +443,5 @@ void printVec(int bound, int id){
         printf("%.2f ",y[id][i]);
     printf("\n");
     printf("\n");
+   */
 }
