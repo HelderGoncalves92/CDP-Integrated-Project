@@ -15,7 +15,7 @@
 
 #include <iostream>
 #include <fstream>
-//#include <time.h>
+#include <omp.h>
 
 
 #include "BKZ.h"
@@ -65,7 +65,10 @@ void check_equals(int* vec, int* ntl, int rows){
 } 
 
 int main(int argc, const char * argv[]) {
-    
+    int nTh = 1;
+   if(argc==3)
+	nTh = atoi(argv[2]);
+
     NTL::mat_ZZ BB;
     std::ifstream input_file(argv[1]);
     
@@ -101,9 +104,9 @@ int main(int argc, const char * argv[]) {
     //Compute all Coefficients and Norms accordingly the basis
     computeGSO(BB_);
     
-    initEnum(4);
+    initEnum(nTh);
 
-    //double time = omp_get_wtime();
+    double time = omp_get_wtime();
     //#pragma pomp inst begin(enum)
     
     
@@ -112,7 +115,7 @@ int main(int argc, const char * argv[]) {
     
     
     //#pragma pomp inst end(enum)
-   // time = omp_get_wtime() - time;
+    time = omp_get_wtime() - time;
     
     //Compute SVP with ENUM vector
     computeNewVector(fvec, vec, BB_);

@@ -145,19 +145,19 @@ int startSet(int id, Enum set){
             //printVec(dim, id);
             
             while(t>=(bound-set->level-1)){
-                moveDown(id, t, bound);
+                moveDown(id, t, bound-1);
                 if(t == (bound-set->level-1)){
                     
                     while(uT[id][t] != set->sibling){
                         
-                        moveUP(id, t, bound);
+                        moveUP(id, t, bound-1);
                         if(abs(uT[id][t]) > abs(set->sibling)){
                             printf("%d:ERRO (Jump Sib) Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
                             return 1;
                         }
                     }
                     
-                } else if(uT[0][t] != 0){
+                } else if(uT[id][t] != 0){
                     printf("%d:ERRO (Not '0') Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
                     printVec(dim, id);
 
@@ -319,13 +319,13 @@ void* threadHander(void* vID){
     int id = *((int *) vID);
     Enum set = NULL;
 
-    set = newEnumElem(49, 1, 3, 9);
+ /* set = newEnumElem(49, 0, 2, 4);
     
     if(id==0){
      EnumSET(set, id);
        // printVec(dim, id);
     }
-/*
+*/
     while (list->count>0) {
         set = pop();
         if(set){
@@ -333,7 +333,7 @@ void* threadHander(void* vID){
             EnumSET(set, id);
         }
     }
-*/
+
     return NULL;
 }
 
@@ -364,9 +364,10 @@ int* ENUM(){
     creatTasks(dim, 3);
     creatTasks(dim-1, 3);
     creatTasks(dim-2, 3);
+    creatTasks(dim-3, 3);
     
     
-    for(i=dim-3; i>50; i--){
+    for(i=dim-4; i>50; i--){
         set = newEnumElem(i, 0, 3, 1);
         addTail(set);
         n++;
@@ -418,7 +419,7 @@ void printVec(int bound, int id){
     for(i=0; i<dimension; i++)
         printf("%d ",uT[id][i]);
     printf("\n");
-    
+  /*
     printf("d:");
     for(i=0; i<dimension; i++)
         printf("%d ",d[id][i]);
@@ -429,16 +430,16 @@ void printVec(int bound, int id){
         printf("%d ",delta[id][i]);
     printf("\n");
     
-  /*  printf("v:");
+    printf("v:");
     for(i=0; i<dimension; i++)
         printf("%d ",v[id][i]);
     printf("\n");
     */
-    printf("cT:");
+   /* printf("cT:");
     for(i=0; i<dimension; i++)
         printf("%.2f ",cT[id][i]);
     printf("\n");
-  /*  printf("Y:");
+    printf("Y:");
     for(i=0; i<dimension; i++)
         printf("%.2f ",y[id][i]);
     printf("\n");
