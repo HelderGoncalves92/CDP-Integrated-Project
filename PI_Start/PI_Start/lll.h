@@ -9,8 +9,20 @@
 #ifndef __PI_Start__lll__
 #define __PI_Start__lll__
 
-#include "simpleMath.h"
+
+ #include "simpleMath.h"
+ #include <xmmintrin.h>
 
 
+ 
+extern short dim;
+extern double **mu;
+extern double *B;
+ 
+void initStructsLLL(int dim);
+void computeGSO(long** base);
+void shiftVector(long** base, int k, int kl);
+void lll(long** base, double delta, int kmax);
+ 
 
 #endif /* defined(__PI_Start__lll__) */

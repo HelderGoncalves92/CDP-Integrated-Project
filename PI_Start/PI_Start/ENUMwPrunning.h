@@ -11,6 +11,10 @@
 
 #include "simpleMath.h"
 
+extern int dim;
+extern double **mu;
+extern double *B;
 
+int* EnumWPrun (double b[], int ini, int fim);
 
 #endif /* defined(__PI_Start__ENUMwPrunning__) */

@@ -1,53 +1,63 @@
-//N = Dimensao, por enquanto definida globalmente para simplificar
-#define N  2;
 
 #include "BKZ.h"
 
-bool passvec(double v[]){
+void initBKZ(int dimension){
+    
+    dim=dimension;
+    
+//    initENUM();
+    initStructsLLL(dimension);
+}
+
+
+bool passvec(int* v, int index){
 	int i;
-	if (v[0]!=1){return false;}
-	for(i = 1; i < N; i++){
-		if (v[i] != 0) return false;
+
+	if (v[index] != 1){ return false; }
+	for(i = 0; i < dim; i++){
+        if (i != index && v[i] != 0){
+            return false;
+        }
 	}
 	return true;
 }
 
-double** BKZ(double *bases[], double *u[], double *c[], int beta, double delta){
-	int z = 0, j = 0, k, h, alt1, alt2, i, l;
-	double v[N], vaux[N];
-	double aux[][];
-	LLL(&bases, delta);
-	while (z < N - 1){
-		j = (j * mod(N-1)) + 1; 
-		k = min(j + beta - 1, N);
-		h = min(k + 1, n);
-		//cria nova matriz de ortogonalizacao para enviar para o ENUM
-		for (i = 0; i < N; i++){
-			vaux[i] = vectorNorm(&bases[i],2);
-		}
-		v = ENUM();
-		if (!passvec(v))
+void BKZ(long** bases, int beta, double delta){
+	int k, h, i, l;
+    int *v;
+	int z = 0, j = 0;
+
+	lll(bases, delta, dim);
+	while (z < dim - 1){
+		j = (j % (dim-1)) + 1;
+		k = fmin(j + beta - 1, dim);
+		h = fmin(k + 1, dim);
+
+		//v = ENUM(j - 1, k - 1);
+		if (!passvec(v, j-1))
 		{
 			z = 0;
-			/*Transforma a matriz para a enviar*/
-			alt1 = k - j;
-			for(alt2 = h; alt>j-1; alt2--){
-				for(i = 0; i < N; i++){
-					bases[alt2+alt1][i] = bases[alt2][i];
+			//Transforma a matriz para a enviar
+			//Insere nova base
+            for(i=0;i<dim; i++)
+                 bases[dim][i] = 0;
+            
+			for (i = 0; i < dim; i++){
+				//alterar vetor
+				for (l = 0; l < dim; l++){
+					bases[dim][l] += v[i] * bases[i][l];
 				}
 			}
-			for(alt2 = j; alt2 <= k ; alt2++){
-				for(i = 0; i < N; i++){
-					bases[alt2][i] *= v[alt2];
-				}
-			}
-			/*Chama LLL com a nova matriz*/
-			LLL(&bases, delta);
+			//Faz shift da base
+			shiftVector(bases, j - 1, dim);
+
+			//Chama LLL com a nova matriz, acaba em h pois vai ter mais 1 vetor a computar pela LLL
+			lll(bases, delta, h+1);
 		}else{
 			z++;
-			/*chama LLL com a matriz actual*/
-			LLL(&bases, delta);
+			//chama LLL com a matriz actual
+			lll(bases, delta, h);
 		}
-	}
-	return bases;
+        
+    }
 }
