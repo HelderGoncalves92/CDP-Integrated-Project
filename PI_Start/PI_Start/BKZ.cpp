@@ -10,7 +10,7 @@ void initBKZ(int dimension){
 }
 
 
-bool passvec(int* v, int index){
+bool passvec(short* v, int index){
 	int i;
 
 	if (v[index] != 1){ return false; }
@@ -24,7 +24,7 @@ bool passvec(int* v, int index){
 
 void BKZ(long** bases, int beta, double delta){
 	int k, h, i, l;
-    int *v;
+    short *v;
 	int z = 0, j = 0;
 
 	lll(bases, delta, dim);

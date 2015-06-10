@@ -403,7 +403,7 @@ void creatTasks(short bound, short level){
 
 short* ENUM(){
     
-	short i, n = 1, creatRangeS = dim - nthreads, creatRangeE = creatRangeS - nthreads, MAX_DEPTH = 0.6*dim, divRange = 0.8*dim;
+	short i, n = 1, creatRangeS = dim - nthreads, creatRangeE = creatRangeS - nthreads, MAX_DEPTH = 0.4*dim, divRange = 0.6*dim;
     Enum set = NULL;
 	for (i = creatRangeS; i > creatRangeE; i--){
 		creatTasks(i, 3);
