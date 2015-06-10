@@ -23,11 +23,11 @@
 #define NUM_EVENTS 2
 
 using namespace std;
-int dim;
+short dim;
 double **mu;
 double *B;
 
-void computeNewVector(long* dst_vec, int* src_vec ,long** base){
+void computeNewVector(long* dst_vec, short* src_vec ,long** base){
     int i,l;
     
     for (i = 0; i < dim; i++){
@@ -111,7 +111,7 @@ int main(int argc, const char * argv[]) {
     
     
     //int* vec = EnumSET(ll->head);
-    int* vec = ENUM();
+    short* vec = ENUM();
     
     
     //#pragma pomp inst end(enum)
