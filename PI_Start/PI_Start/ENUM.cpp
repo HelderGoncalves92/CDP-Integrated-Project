@@ -391,16 +391,13 @@ void creatTasks(short bound, short level){
     vec[0]=-1;
     vec[1]=1;
     vec[2]=0;
-
     	
-    for(i=1; i<=4; i++){
-	set = newEnumElem(bound, 1, 3, 3, vec);
-	addTail(set);
-        set = newEnumElem(bound, -1, 3, 3, vec);
-        addTail(set);
-        set = newEnumElem(bound, 2, 2, 3, vec);
-        addTail(set);
-    }
+    set = newEnumElem(bound, 1, 3, 3, vec);
+    addTail(set);
+    set = newEnumElem(bound, -1, 3, 3, vec);
+    addTail(set);
+    set = newEnumElem(bound, 2, 2, 3, vec);
+    addTail(set);
     set = newEnumElem(bound, 0, 2, 3, vec);
     addTail(set);
     
