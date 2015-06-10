@@ -364,10 +364,10 @@ void* threadHander(void* vID){
 
     set = newEnumElem(dim-id, 1, 3, 3, vec);
     
-    if(id==0){
-     EnumSET(set, id);
-       // printVec(dim, id);
-    }
+    //if(id==0){
+     //EnumSET(set, id);
+        //printVec(dim, id);
+    //}
 
     while (list->count>0) {
         set = pop();
@@ -383,9 +383,27 @@ void* threadHander(void* vID){
 
 //From vector '0 0 0 0 0'
 void creatTasks(short bound, short level){
-	short i;
+	short i, j;
 	//short depth = bound - level;
     Enum set = NULL;
+
+    short* vec = (short*)_mm_malloc(4*sizeof(short), 64);
+    vec[0]=-1;
+    vec[1]=1;
+    vec[2]=0;
+
+    	
+    for(i=1; i<=4; i++){
+	set = newEnumElem(bound, 1, 3, 3, vec);
+	addTail(set);
+        set = newEnumElem(bound, -1, 3, 3, vec);
+        addTail(set);
+        set = newEnumElem(bound, 2, 2, 3, vec);
+        addTail(set);
+    }
+    set = newEnumElem(bound, 0, 2, 3, vec);
+    addTail(set);
+    
 
     for(i=1; i<=level; i++){
 
