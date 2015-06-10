@@ -13,13 +13,13 @@
 #include "lll.h"
 
 
-extern int dim;
+extern short dim;
 extern double **mu;
 extern double *B;
 
 /******* STRUCTS *********/
 typedef struct sEnum{
-    int bound, type, sibling, level, *vec;
+    short bound, type, sibling, level, *vec;
     struct sEnum *next;
 }*Enum, NEnum;
 
@@ -27,12 +27,12 @@ typedef struct sEnum{
 typedef struct slist{
     Enum head;
     Enum tail;
-    int count;
+    short count;
 }*LEnum,NLEnum;
 
 
-void initEnum(int nthreads);
-int* ENUM();
+void initEnum(short nthreads);
+short* ENUM();
 
 
 #endif /* defined(__PI_Start__ENUM__) */

@@ -7,29 +7,29 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-int nthreads;
-int *u, **uT, **d, **delta, **v;
+short nthreads;
+short *u, **uT, **d, **delta, **v;
 double **cT, **y, cL;
 LEnum list = NULL;
 
 pthread_mutex_t u_Mutex, toPop_Mutex;
 
 
-void printVec(int bound, int id);
+void printVec(short bound, short id);
 
-void initEnum(int n_threads){
-    int i, auxDim = dim+1;
+void initEnum(short n_threads){
+    short i, auxDim = dim+1;
     nthreads = n_threads;
     
     //Allocate memory
-    u = (int*)_mm_malloc(dim*sizeof(NLEnum), 64);
+    u = (short*)_mm_malloc(dim*sizeof(NLEnum), 64);
     list = (LEnum)_mm_malloc(sizeof(NLEnum), 64);
     
     list->count = 0;
     list->head = list->tail = NULL;;
     
     //Fill u with the shortest vector
-    for(int i=1; i<=dim; i++)
+    for(short i=1; i<=dim; i++)
         u[i] = 0;
         
     
@@ -37,18 +37,18 @@ void initEnum(int n_threads){
     u[0]=1;
     
     //Prepare memory to each thread
-    delta = (int**)_mm_malloc(n_threads*sizeof(int*), 64);
-    uT = (int**)_mm_malloc(n_threads*sizeof(int*), 64);
-    d = (int**)_mm_malloc(n_threads*sizeof(int*), 64);
-    v = (int**)_mm_malloc(n_threads*sizeof(int*), 64);
+    delta = (short**)_mm_malloc(n_threads*sizeof(short*), 64);
+    uT = (short**)_mm_malloc(n_threads*sizeof(short*), 64);
+    d = (short**)_mm_malloc(n_threads*sizeof(short*), 64);
+    v = (short**)_mm_malloc(n_threads*sizeof(short*), 64);
     cT = (double**)_mm_malloc(n_threads*sizeof(double*), 64);
     y = (double**)_mm_malloc(n_threads*sizeof(double*), 64);
     
     for(i=0; i<n_threads; i++){
-        delta[i] = (int*)_mm_malloc(auxDim*sizeof(int), 64);
-        uT[i] = (int*)_mm_malloc(auxDim*sizeof(int), 64);
-        d[i] = (int*)_mm_malloc(auxDim*sizeof(int), 64);
-        v[i] = (int*)_mm_malloc(auxDim*sizeof(int), 64);
+        delta[i] = (short*)_mm_malloc(auxDim*sizeof(short), 64);
+        uT[i] = (short*)_mm_malloc(auxDim*sizeof(short), 64);
+        d[i] = (short*)_mm_malloc(auxDim*sizeof(short), 64);
+        v[i] = (short*)_mm_malloc(auxDim*sizeof(short), 64);
         cT[i] = (double*)_mm_malloc(auxDim*sizeof(double), 64);
         y[i] = (double*)_mm_malloc(auxDim*sizeof(double), 64);
     }
@@ -59,17 +59,17 @@ void initEnum(int n_threads){
 }
 
 
-void moveDown(int id, int t, int s){
+void moveDown(short id, short t, short s){
     
     double aux = 0.0;
-    int i;
+    short i;
     
     for (i = t + 1; i <= s; i++){
         aux += uT[id][i] * mu[i][t];
     }
     
     y[id][t] = aux;
-    uT[id][t] = v[id][t] = int(round(-aux));
+    uT[id][t] = v[id][t] = short(round(-aux));
     delta[id][t] = 0;
     
     if (uT[id][t] > -aux)
@@ -85,7 +85,7 @@ void moveDown(int id, int t, int s){
 
 
 
-void moveUP(int id, int t, int s){
+void moveUP(short id, short t, short s){
 
     if(t < s){
         delta[id][t] = -delta[id][t];
@@ -99,8 +99,9 @@ void moveUP(int id, int t, int s){
     cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
 }
 
-int startSet(int id, Enum set){
-    int i, bound = set->bound+1;
+int startSet(short id, Enum set){
+	short i;
+	short bound = set->bound+1;
     
     //Clean vectors from preciously executions
     for(i=0; i<=bound; i++)
@@ -141,12 +142,12 @@ int startSet(int id, Enum set){
             for(i=bound-2; i>= bound - set->level-2; i--)
                 cT[id][i] = cT[id][i + 1] + (y[id][i]*y[id][i] + 2*uT[id][i]*y[id][i] + uT[id][i]*uT[id][i]) * B[i];
             */
-            int t=bound-2;
+            short t=bound-2;
             //printVec(dim, id);
 
             if(set->vec != NULL){
                 
-                int j=0;
+                short j=0;
                 while(t>=(bound-set->level-1)){
                     moveDown(id, t, bound-1);
                     
@@ -205,7 +206,7 @@ int startSet(int id, Enum set){
 }
 
 
-Enum newEnumElem(int bound, int sibling, int type, int level, int *vec){
+Enum newEnumElem(short bound, short sibling, short type, short level, short *vec){
     Enum st = (Enum)_mm_malloc(sizeof(NEnum),64);
     st->next = NULL;
     st->bound = bound-1;
@@ -251,11 +252,13 @@ Enum pop(){
 
 
 //ENUM accordingly C. P. Schnorr && M. Euchner
-void EnumSET(Enum set, int id){
+void EnumSET(Enum set, short id){
     
     double aux;
-    int s, t, i, bound = set->bound;
-    int toCopy = bound + 1;
+	short s, t;
+	short i;
+	short bound = set->bound;
+    short toCopy = bound + 1;
     
     if(startSet(id, set))
         return;
@@ -298,7 +301,7 @@ void EnumSET(Enum set, int id){
                 }
                 
                 y[id][t] = aux;
-                uT[id][t] = v[id][t] = int(round(-aux));
+                uT[id][t] = v[id][t] = short(round(-aux));
                 delta[id][t] = 0;
                 
                 if (uT[id][t] > -aux){
@@ -320,7 +323,7 @@ void EnumSET(Enum set, int id){
                 //Lock critical zone
                 pthread_mutex_lock(&u_Mutex);
                     cL = cT[id][0];
-                    memcpy(&u[0], uT[id], toCopy*sizeof(int));
+                    memcpy(&u[0], uT[id], toCopy*sizeof(short));
                     for(i=toCopy; i<dim; i++)
                         u[i] = 0;
                 
@@ -351,10 +354,10 @@ void EnumSET(Enum set, int id){
 
 void* threadHander(void* vID){
     
-    int id = *((int *) vID);
+    short id = *((short *) vID);
     Enum set = NULL;
 
-    int* vec = (int*)_mm_malloc(4*sizeof(int), 64);
+    short* vec = (short*)_mm_malloc(4*sizeof(short), 64);
     vec[0]=-1;
     vec[1]= 1;
     vec[2]= 0;
@@ -379,8 +382,9 @@ void* threadHander(void* vID){
 
 
 //From vector '0 0 0 0 0'
-void creatTasks(int bound, int level){
-    int i, depth = bound-level;
+void creatTasks(short bound, short level){
+	short i;
+	//short depth = bound - level;
     Enum set = NULL;
 
     for(i=1; i<=level; i++){
@@ -397,17 +401,15 @@ void creatTasks(int bound, int level){
 }
 
 
-int* ENUM(){
+short* ENUM(){
     
-    int i, n=1, MAX_DEPTH=40;
+    short i, n=1, creatRange = dim-nthreads, MAX_DEPTH=0.6*dim, divRange = 0.8*dim;
     Enum set = NULL;
-    creatTasks(dim, 3);
-    creatTasks(dim-1, 3);
-    creatTasks(dim-2, 3);
-    creatTasks(dim-3, 3);
+	for (i = dim; i > creatRange; i--){
+		creatTasks(i, 3);
+	}
     
-    
-    for(i=dim-4; i>50; i--){
+    for(i=creatRange; i>50; i--){
         set = newEnumElem(i, 0, 3, 1, NULL);
         addTail(set);
         n++;
@@ -436,7 +438,7 @@ int* ENUM(){
     
     //Threads Start
     for (i = 0; i < nthreads; i++) {
-        int *threadNum = (int*)malloc(sizeof (int));
+        short *threadNum = (short*)malloc(sizeof (short));
         *threadNum = i;
         pthread_create(&tHandles[i], NULL, threadHander, (void *)threadNum);
 
@@ -450,10 +452,10 @@ int* ENUM(){
 }
 
 
-void printVec(int bound, int id){
-    int i;
+void printVec(short bound, short id){
+    short i;
     
-    int dimension = bound;
+    short dimension = bound;
     
     printf("uT:");
     for(i=0; i<dimension; i++)

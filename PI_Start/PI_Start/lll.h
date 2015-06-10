@@ -15,7 +15,7 @@
 
 
  
-extern int dim;
+extern short dim;
 extern double **mu;
 extern double *B;
  
