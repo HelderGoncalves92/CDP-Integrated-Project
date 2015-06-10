@@ -361,14 +361,14 @@ void* threadHander(void* vID){
     vec[0]=-1;
     vec[1]= 1;
     vec[2]= 0;
-/*
-    set = newEnumElem(49, 1, 3, 3, vec);
+
+    set = newEnumElem(dim-id, 1, 3, 3, vec);
     
     if(id==0){
      EnumSET(set, id);
        // printVec(dim, id);
     }
-*/
+
     while (list->count>0) {
         set = pop();
         if(set){
@@ -403,16 +403,16 @@ void creatTasks(short bound, short level){
 
 short* ENUM(){
     
-    short i, n=1, creatRange = dim-nthreads, MAX_DEPTH=0.6*dim, divRange = 0.8*dim;
+	short i, n = 1, creatRange = dim - nthreads, MAX_DEPTH = 0.4*dim, divRange = 0.6*dim;
     Enum set = NULL;
 	for (i = dim; i > creatRange; i--){
 		creatTasks(i, 3);
 	}
     
-    for(i=creatRange; i>50; i--){
+    for(i=creatRange; i>divRange; i--){
         set = newEnumElem(i, 0, 3, 1, NULL);
         addTail(set);
-        n++;
+		n++;
         set = newEnumElem(i, 1, 3, 1, NULL);
         addTail(set);
         n++;
