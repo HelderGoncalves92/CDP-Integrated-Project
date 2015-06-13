@@ -130,7 +130,7 @@ int startSet(short id, Enum set){
         uT[id][bound-1] = 1;
         
     } else
-        if(set->type == 2 || set->type == 3){
+        if(set->type == 2 || set->type == 3 || set->type == 4){
             cT[id][bound] = 0.0;
             cT[id][bound-1] = B[bound-1];
             uT[id][bound-1] = 1;
@@ -144,9 +144,9 @@ int startSet(short id, Enum set){
             */
             short t=bound-2;
             //printVec(dim, id);
-
             if(set->vec != NULL){
-                
+                printf("My bound: %d, sibling: %d\n",t, set->sibling);
+                set->vec[3] = set->sibling;
                 short j=0;
                 while(t>=(bound-set->level-1)){
                     moveDown(id, t, bound-1);
@@ -169,7 +169,6 @@ int startSet(short id, Enum set){
                     t--;
                     j++;
                 }
-            
             }else{
             
                 while(t>=(bound-set->level-1)){
@@ -213,8 +212,10 @@ Enum newEnumElem(short bound, short sibling, short type, short level, short *vec
     st->type = type;
     st->sibling = sibling;
     st->level = level;
-    st->vec = vec;
-
+    if(vec!=NULL){
+        st->vec = (short*)_mm_malloc(4*sizeof(short),64);
+        memcpy(&st->vec[0], vec, 4*sizeof(short));
+    }
     return st;
 }
 
@@ -280,14 +281,32 @@ void EnumSET(Enum set, short id){
         t=bound;
         
     //Search just in one sibling
-    } else {
+    } else if(set->type == 3){
         s = bound;
         bound = bound - set->level-1;
         moveDown(id, bound, s);
         t=bound;
-
+    } else if(set->type == 4){
+        s = bound;
+        if(set->vec[1]==2){
+            if(set->vec[0]==2){
+                bound = bound - set->level + 3;
+            }
+            else{
+                bound = bound - set->level + 2;
+            }
+        }
+        else{
+                bound = bound - set->level + 1;
+        }
+        t=bound;
     }
-
+    printf("id: %d | bound = %d, type = %d, sibling = %d\n", id, set->bound, set->type, set->sibling);
+    if(set->vec != NULL){
+        printf("VECTOR: 0: %d, 1: %d, 2: %d, 3: %d\n",set->vec[0], set->vec[1], set->vec[2], set->vec[3]);
+    }
+    printVec(set->bound,id);
+    
     while(t <= bound){
       // printVec(dim, id);
         if (cT[id][t] < cL){
@@ -357,12 +376,12 @@ void* threadHander(void* vID){
     short id = *((short *) vID);
     Enum set = NULL;
 
-    short* vec = (short*)_mm_malloc(4*sizeof(short), 64);
+    /*short* vec = (short*)_mm_malloc(4*sizeof(short), 64);
     vec[0]=-1;
     vec[1]= 1;
     vec[2]= 0;
 
-    set = newEnumElem(dim-id, 1, 3, 3, vec);
+    set = newEnumElem(dim-id, 1, 3, 3, vec);*/
     
     //if(id==0){
      //EnumSET(set, id);
@@ -386,33 +405,74 @@ void creatTasks(short bound, short level){
 	short i, j;
 	//short depth = bound - level;
     Enum set = NULL;
-
+    bool finished = false;
     short* vec = (short*)_mm_malloc(4*sizeof(short), 64);
-    vec[0]=-1;
-    vec[1]=1;
-    vec[2]=0;
-    	
-    set = newEnumElem(bound, 1, 3, 3, vec);
-    addTail(set);
-    set = newEnumElem(bound, -1, 3, 3, vec);
-    addTail(set);
-    set = newEnumElem(bound, 2, 2, 3, vec);
-    addTail(set);
-    set = newEnumElem(bound, 0, 2, 3, vec);
-    addTail(set);
     
+    vec[0]=0;
+    vec[1]=0;
+    vec[2]=1;
 
-    for(i=1; i<=level; i++){
-
-        set = newEnumElem(bound, 1, 3, i, NULL);
+    while(!finished){
+        set = newEnumElem(bound, 0, 3, 3, vec);
         addTail(set);
-        set = newEnumElem(bound, -1, 3, i, NULL);
+        set = newEnumElem(bound, 1, 3, 3, vec);
         addTail(set);
-        set = newEnumElem(bound, 2, 2, i, NULL);
+        set = newEnumElem(bound, -1, 3, 3, vec);
         addTail(set);
+        if(vec[2]==2){
+            set = newEnumElem(bound, 2, 4, 3, vec);
+            addTail(set);
+        }else{
+            set = newEnumElem(bound, 2, 2, 3, vec);
+            addTail(set);
+        }
+        if(vec[2]==0){
+            vec[2] = 1;
+        }
+        else if(vec[2]==1){
+            vec[2] = -1;
+        }
+        else if(vec[2]==-1){
+            vec[2] = 2;
+        }
+        else if(vec[2]==2){
+            if(vec[1]==0){
+                vec[1] = 1;
+            }
+            else if(vec[1]==1){
+                vec[1] = -1;
+            }
+            else if(vec[1]==-1){
+                vec[1] = 2;
+            }
+            else if(vec[1]==2){
+                if(vec[0]==0){
+                    vec[0] = 1;
+                }
+                else if(vec[0]==1){
+                    vec[0] = -1;
+                }
+                else if(vec[0]==-1){
+                    vec[0] = 2;
+                }
+                else if(vec[0]==2){
+                    finished = true;
+                }
+            }
+        }
     }
-    set = newEnumElem(bound, 0, 2, i, NULL);
-    addTail(set);
+
+//    for(i=1; i<=level; i++){
+//
+//        set = newEnumElem(bound, 1, 3, i, NULL);
+//        addTail(set);
+//        set = newEnumElem(bound, -1, 3, i, NULL);
+//        addTail(set);
+//        set = newEnumElem(bound, 2, 2, i, NULL);
+//        addTail(set);
+//    }
+//    set = newEnumElem(bound, 0, 2, i, NULL);
+//    addTail(set);
 }
 
 
@@ -448,6 +508,7 @@ short* ENUM(){
     set = newEnumElem(i, 1, 0, 1, NULL);
     addTail(set);
     
+    printf("Total divisions: %d\n", list->count);
     
     pthread_t tHandles[nthreads];
     
@@ -491,11 +552,12 @@ void printVec(short bound, short id){
     for(i=0; i<dimension; i++)
         printf("%d ",v[id][i]);
     printf("\n");
-    */
-   /* printf("cT:");
+   
+    printf("cT:");
     for(i=0; i<dimension; i++)
         printf("%.2f ",cT[id][i]);
     printf("\n");
+    
     printf("Y:");
     for(i=0; i<dimension; i++)
         printf("%.2f ",y[id][i]);
