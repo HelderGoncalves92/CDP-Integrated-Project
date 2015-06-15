@@ -288,7 +288,7 @@ void EnumSET(Enum set, short id){
     } else if(set->type == 3){
         s = bound;
         bound = bound - set->level-1;
-        //moveDown(id, bound, s);
+        moveDown(id, bound, s);
         t=bound;
     } else if(set->type == 4){
         s = bound;
@@ -495,7 +495,7 @@ short* ENUM(){
     for(i=creatRange; i>divRange; i--){
         set = newEnumElem(i, 0, 3, 1, NULL);
         addTail(set);
-		n++;
+	n++;
         set = newEnumElem(i, 1, 3, 1, NULL);
         addTail(set);
         n++;
