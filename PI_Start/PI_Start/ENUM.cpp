@@ -147,6 +147,7 @@ int startSet(short id, Enum set){
             if(set->vec != NULL){
                 printf("My bound: %d, sibling: %d\n",t, set->sibling);
                 set->vec[3] = set->sibling;
+                printf("VECTOR: 0: %d, 1: %d, 2: %d, 3: %d\n",set->vec[0], set->vec[1], set->vec[2], set->vec[3]);
                 short j=0;
                 while(t>=(bound-set->level-1)){
                     moveDown(id, t, bound-1);
@@ -215,6 +216,8 @@ Enum newEnumElem(short bound, short sibling, short type, short level, short *vec
     if(vec!=NULL){
         st->vec = (short*)_mm_malloc(4*sizeof(short),64);
         memcpy(&st->vec[0], vec, 4*sizeof(short));
+    }else{
+        st->vec = NULL;
     }
     return st;
 }
@@ -264,7 +267,8 @@ void EnumSET(Enum set, short id){
     if(startSet(id, set))
         return;
   //  printVec(dim, id);
-
+    printf("Original Vec\n");
+    printVec(dim,id);
     //Start on leaf (like Schnorr)
     if(set->type==0){
         s = t = 0;
@@ -284,7 +288,7 @@ void EnumSET(Enum set, short id){
     } else if(set->type == 3){
         s = bound;
         bound = bound - set->level-1;
-        moveDown(id, bound, s);
+        //moveDown(id, bound, s);
         t=bound;
     } else if(set->type == 4){
         s = bound;
@@ -302,10 +306,10 @@ void EnumSET(Enum set, short id){
         t=bound;
     }
     printf("id: %d | bound = %d, type = %d, sibling = %d\n", id, set->bound, set->type, set->sibling);
-    if(set->vec != NULL){
-        printf("VECTOR: 0: %d, 1: %d, 2: %d, 3: %d\n",set->vec[0], set->vec[1], set->vec[2], set->vec[3]);
-    }
-    printVec(set->bound,id);
+//    if(set->vec != NULL){
+//        printf("VECTOR: 0: %d, 1: %d, 2: %d, 3: %d\n",set->vec[0], set->vec[1], set->vec[2], set->vec[3]);
+//    }
+    printVec(dim,id);
     
     while(t <= bound){
       // printVec(dim, id);
@@ -410,57 +414,60 @@ void creatTasks(short bound, short level){
     
     vec[0]=0;
     vec[1]=0;
-    vec[2]=1;
+    vec[2]=0;
 
     while(!finished){
-        set = newEnumElem(bound, 0, 3, 3, vec);
+        set = newEnumElem(bound, 0, 3, 4, vec);
         addTail(set);
-        set = newEnumElem(bound, 1, 3, 3, vec);
+        set = newEnumElem(bound, 1, 3, 4, vec);
         addTail(set);
-        set = newEnumElem(bound, -1, 3, 3, vec);
+        set = newEnumElem(bound, -1, 3, 4, vec);
         addTail(set);
         if(vec[2]==2){
-            set = newEnumElem(bound, 2, 4, 3, vec);
+            set = newEnumElem(bound, 2, 4, 4, vec);
             addTail(set);
         }else{
-            set = newEnumElem(bound, 2, 2, 3, vec);
+            set = newEnumElem(bound, 2, 2, 4, vec);
             addTail(set);
         }
         if(vec[2]==0){
-            vec[2] = 1;
-        }
-        else if(vec[2]==1){
             vec[2] = -1;
         }
         else if(vec[2]==-1){
+            vec[2] = 1;
+        }
+        else if(vec[2]==1){
             vec[2] = 2;
         }
         else if(vec[2]==2){
             if(vec[1]==0){
-                vec[1] = 1;
-            }
-            else if(vec[1]==1){
                 vec[1] = -1;
             }
             else if(vec[1]==-1){
+                vec[1] = 1;
+            }
+            else if(vec[1]==1){
                 vec[1] = 2;
             }
             else if(vec[1]==2){
                 if(vec[0]==0){
-                    vec[0] = 1;
-                }
-                else if(vec[0]==1){
                     vec[0] = -1;
                 }
                 else if(vec[0]==-1){
+                    vec[0] = 1;
+                }
+                else if(vec[0]==1){
                     vec[0] = 2;
                 }
                 else if(vec[0]==2){
                     finished = true;
                 }
+                vec[1] = 0;
             }
+            vec[2] = 0;
         }
     }
+    free(vec);
 
 //    for(i=1; i<=level; i++){
 //
@@ -478,11 +485,12 @@ void creatTasks(short bound, short level){
 
 short* ENUM(){
     
-	short i, n = 1, creatRange = dim - nthreads, MAX_DEPTH = 0.4*dim, divRange = 0.6*dim;
+    short i, n = 1, creatRange = dim - nthreads, MAX_DEPTH = 0.4*dim, divRange = 0.6*dim;
     Enum set = NULL;
-	for (i = dim; i > creatRange; i--){
-		creatTasks(i, 3);
-	}
+    
+    for (i = dim; i > creatRange; i--){
+            creatTasks(i, 3);
+    }
     
     for(i=creatRange; i>divRange; i--){
         set = newEnumElem(i, 0, 3, 1, NULL);
