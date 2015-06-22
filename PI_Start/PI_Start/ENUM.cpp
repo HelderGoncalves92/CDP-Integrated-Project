@@ -294,14 +294,15 @@ void EnumSET(Enum set, short id){
         s = bound;
         bool finished = false;
         short i;
-        for(i=set->level-2; i>0 && !finished; i--){
+        for(i=set->level-2; i>=0 && !finished; i--){
             if(set->vec[i]==2){
                 bound++;
-            }else{
-                bound -= set->level;
+            }else{          
                 finished = true;
             }                
         }
+	if(set->vec[0]==2&&!finished){bound++;}
+	bound -= set->level;
         t=bound;
     }
     //printf("id: %d | bound = %d, type = %d, sibling = %d\n", id, set->bound, set->type, set->sibling);
