@@ -146,32 +146,26 @@ int startSet(short id, Enum set){
             //printVec(dim, id);
             if(set->vec != NULL){
 //                printf("My bound: %d, sibling: %d\n",t, set->sibling);
-                set->vec[set->level-1] = set->sibling;
+		set->vec[set->level-1] = set->sibling;
 //                printf("VECTOR: 0: %d, 1: %d, 2: %d, 3: %d\n",set->vec[0], set->vec[1], set->vec[2], set->vec[3]);
                 short j=0;
                 while(t>=(bound-set->level-1)){
                     moveDown(id, t, bound-1);
-                    
                     if(cT[id][t] > cL){
                         printf("%d:Lower cL |Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
                         return 1;
-                    }
-                        
-                    while(uT[id][t] != set->vec[j]){
-                        
+                    }                        
+                    while(uT[id][t] != set->vec[j]){                        
                         moveUP(id, t, bound-1);
                         if(abs(uT[id][t]) > abs(set->vec[j])){
                             printf("%d:ERRO (Jump Sib) Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
                             return 1;
                         }
-                    }
-                    
-                    
+                    }                  
                     t--;
                     j++;
                 }
-            }else{
-            
+            }else{            
                 while(t>=(bound-set->level-1)){
                     moveDown(id, t, bound-1);
                     
@@ -267,7 +261,7 @@ void EnumSET(Enum set, short id){
     if(startSet(id, set))
         return;
   //  printVec(dim, id);
-   // printf("Original Vec\n");
+    printf("Original Vec\n");
     printVec(dim,id);
     //Start on leaf (like Schnorr)
     if(set->type==0){
@@ -305,11 +299,11 @@ void EnumSET(Enum set, short id){
 	bound -= set->level;
         t=bound;
     }
-    //printf("id: %d | bound = %d, type = %d, sibling = %d\n", id, set->bound, set->type, set->sibling);
+    printf("id: %d | bound = %d, type = %d, sibling = %d\n", id, set->bound, set->type, set->sibling);
 //    if(set->vec != NULL){
 //        printf("VECTOR: 0: %d, 1: %d, 2: %d, 3: %d\n",set->vec[0], set->vec[1], set->vec[2], set->vec[3]);
 //    }
-   // printVec(dim,id);
+    printVec(dim,id);
     
     while(t <= bound){
       // printVec(dim, id);
@@ -476,22 +470,25 @@ void creatTasks(short bound, short level, short totvec){
 //    addTail(set);
 }
 
-
-short* ENUM(){
+//OLD FUNCTION
+//short* ENUM(){
     
-    short i, j, n = 1, creatRange = dim - nthreads, MAX_DEPTH = 0.4*dim, divRange = 0.6*dim;
+//NEW FUNCTION WITH INPUTS
+short* ENUM(short creatRange, short divRange, short MAX_DEPTH, short veclength){
+    short i, j, n = 1;
+    //short i, j, n = 1, creatRange = dim - nthreads, MAX_DEPTH = 0.4*dim, divRange = 0.6*dim, veclength;
     Enum set = NULL;
-    short veclength = 3, totvec;
+    short  totvec;
     
     totvec = createVectors(veclength);
     
-    for (i = dim; i > creatRange; i--){
+    for (i = dim; i > creatRange && i>0; i--){
             creatTasks(i, veclength, totvec);
     }
     
     freeVectors(totvec);
     
-    for(i=creatRange; i>divRange; i--){
+    for(i=creatRange; i>divRange && i>0; i--){
         set = newEnumElem(i, 0, 3, 1, NULL);
         addTail(set);
 	n++;
@@ -506,13 +503,14 @@ short* ENUM(){
         n++;
     }
     
+    
     //Prepare list with tasks
-    for(; i>MAX_DEPTH; i--){
+    for(; i>MAX_DEPTH && i>0; i--){
         set = newEnumElem(i, 1, 1, 1, NULL);
         addTail(set);
         n++;
     }
-    set = newEnumElem(i, 1, 0, 1, NULL);
+    if(i>0)set = newEnumElem(i, 1, 0, 1, NULL);
     addTail(set);
     
     printf("Total divisions: %d\n", list->count);

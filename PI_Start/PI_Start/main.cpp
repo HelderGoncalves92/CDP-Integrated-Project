@@ -66,7 +66,7 @@ void check_equals(int* vec, int* ntl, int rows){
 
 int main(int argc, const char * argv[]) {
     int nTh = 1;
-   if(argc==3)
+   if(argc>=3)
 	nTh = atoi(argv[2]);
 
     NTL::mat_ZZ BB;
@@ -109,9 +109,18 @@ int main(int argc, const char * argv[]) {
     double time = omp_get_wtime();
     //#pragma pomp inst begin(enum)
     
+    if(argc!=7){
+	printf("USAGE: basefile nthreads creatRange divRange MAX_DEPTH veclength\n");
+    	return 0;
+    }	
+    short creatRange = (short)atoi(argv[3]);
+    short divRange = (short)atoi(argv[4]);
+    short MAX_DEPTH = (short)atoi(argv[5]);
+    short veclength = (short)atoi(argv[6]);
+    short* vec = ENUM(creatRange,divRange,MAX_DEPTH,veclength);	
     
     //int* vec = EnumSET(ll->head);
-    short* vec = ENUM();
+    //short* vec = ENUM();
     
     
     //#pragma pomp inst end(enum)
