@@ -20,6 +20,7 @@ extern double *B;
 /******* STRUCTS *********/
 typedef struct sEnum{
     short bound, type, sibling, level, *vec;
+    double cT, cT2;
     struct sEnum *next;
 }*Enum, NEnum;
 
@@ -27,7 +28,7 @@ typedef struct sEnum{
 typedef struct slist{
     Enum head;
     Enum tail;
-    short count;
+    int count;
 }*LEnum,NLEnum;
 
 
