@@ -15,19 +15,19 @@
 
 #include <iostream>
 #include <fstream>
-#include <time.h>
 #include <omp.h>
+
 
 #include "BKZ.h"
 
 #define NUM_EVENTS 2
 
 using namespace std;
-int dim;
+short dim;
 double **mu;
 double *B;
 
-void computeNewVector(long* dst_vec, int* src_vec ,long** base){
+void computeNewVector(long* dst_vec, short* src_vec ,long** base){
     int i,l;
     
     for (i = 0; i < dim; i++){
@@ -66,10 +66,17 @@ void check_equals(int* vec, int* ntl, int rows){
 
 int main(int argc, const char * argv[]) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
     
 >>>>>>> version-map-reduce
+=======
+    int nTh = 1;
+   if(argc==3)
+	nTh = atoi(argv[2]);
+
+>>>>>>> parallelV1
     NTL::mat_ZZ BB;
     std::ifstream input_file(argv[1]);
     
@@ -101,7 +108,6 @@ int main(int argc, const char * argv[]) {
     //Init all Structs (Vectors an Matrix)
     long* fvec = (long*)calloc(cols ,sizeof(long));
     initStructsLLL(cols);
-    initENUM();
     
     //Compute all Coefficients and Norms accordingly the basis
     computeGSO(BB_);
@@ -114,11 +120,15 @@ int main(int argc, const char * argv[]) {
     time = omp_get_wtime() -time;
 =======
     
+    initEnum(nTh);
 
     double time = omp_get_wtime();
     //#pragma pomp inst begin(enum)
     
-    int* vec = ENUM(0, dim-1);
+    
+    //int* vec = EnumSET(ll->head);
+    short* vec = ENUM();
+    
     
     //#pragma pomp inst end(enum)
     time = omp_get_wtime() - time;

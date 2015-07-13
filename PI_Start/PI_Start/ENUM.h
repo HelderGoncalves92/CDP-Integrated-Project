@@ -12,13 +12,28 @@
 #include <xmmintrin.h>
 #include "lll.h"
 
-extern int dim;
+
+extern short dim;
 extern double **mu;
 extern double *B;
 
-void initENUM();
-int* ENUM(int ini, int fim);
+/******* STRUCTS *********/
+typedef struct sEnum{
+    short bound, type, sibling, level, *vec;
+    double cT, cT2;
+    struct sEnum *next;
+}*Enum, NEnum;
 
-int* basicENUM();
+
+typedef struct slist{
+    Enum head;
+    Enum tail;
+    int count;
+}*LEnum,NLEnum;
+
+
+void initEnum(short nthreads);
+short* ENUM();
+
 
 #endif /* defined(__PI_Start__ENUM__) */
