@@ -7,14 +7,12 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-
 short nthreads;
 short *u, **uT, **d, **delta, **v, **vectors;
 double **cT, **y, cL;
 LEnum list = NULL;
-LEnum list_Urgent = NULL;
 
-pthread_mutex_t u_Mutex, toHead_Mutex;
+pthread_mutex_t u_Mutex, toPop_Mutex;
 
 
 void printVec(short bound, short id);
@@ -26,13 +24,9 @@ void initEnum(short n_threads){
     //Allocate memory
     u = (short*)_mm_malloc(dim*sizeof(NLEnum), 64);
     list = (LEnum)_mm_malloc(sizeof(NLEnum), 64);
-    list_Urgent = (LEnum)_mm_malloc(sizeof(NLEnum), 64);
     
     list->count = 0;
-    list->head = list->tail = NULL;
-    list_Urgent->count = 0;
-    list_Urgent->head = list_Urgent->tail = NULL;;
-
+    list->head = list->tail = NULL;;
     
     //Fill u with the shortest vector
     for(short i=1; i<=dim; i++)
@@ -61,7 +55,7 @@ void initEnum(short n_threads){
     
     //Prepare to Pthreads
     pthread_mutex_init(&u_Mutex, NULL);
-    pthread_mutex_init(&toHead_Mutex, NULL);
+    pthread_mutex_init(&toPop_Mutex, NULL);
 }
 
 
@@ -84,7 +78,8 @@ void moveDown(short id, short t, short s){
         d[id][t] = 1;
     
     //Prepare cT[t] to next iteration
-    cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
+    aux = y[id][t] + uT[id][t];
+    cT[id][t] = cT[id][t + 1] + (aux * aux) * B[t];
 }
 
 
@@ -102,7 +97,8 @@ void moveUP(short id, short t, short s){
     uT[id][t] = v[id][t] + delta[id][t];
     
     //Prepare cT[t] to next iteration
-    cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
+    aux = y[id][t] + uT[id][t];
+    cT[id][t] = cT[id][t + 1] + (aux * aux) * B[t];
 }
 
 int startSet(short id, Enum set){
@@ -134,27 +130,19 @@ int startSet(short id, Enum set){
         cT[id][bound] = 0.0;
         cT[id][bound-1] = B[bound-1];
         uT[id][bound-1] = 1;
-        delta[id][bound-1]=1;
         
     } else
-        if(set->type == 2 || set->type == 3){
+        if(set->type == 2 || set->type == 3 || set->type == 4){
             cT[id][bound] = 0.0;
             cT[id][bound-1] = B[bound-1];
             uT[id][bound-1] = 1;
-            /*
-            uT[id][bound-(set->level+1)] = set->sibling;
-            delta[id][bound-(set->level+1)] = set->sibling;
             
-            
-            for(i=bound-2; i>= bound - set->level-2; i--)
-                cT[id][i] = cT[id][i + 1] + (y[id][i]*y[id][i] + 2*uT[id][i]*y[id][i] + uT[id][i]*uT[id][i]) * B[i];
-            */
             short t=bound-2;
-            //printVec(dim, id);
+            
             if(set->vec != NULL){
-//                printf("My bound: %d, sibling: %d\n",t, set->sibling);
+
 		set->vec[set->level-1] = set->sibling;
-//                printf("VECTOR: 0: %d, 1: %d, 2: %d, 3: %d\n",set->vec[0], set->vec[1], set->vec[2], set->vec[3]);
+
                 short j=0;
                 while(t>=(bound-set->level-1)){
                     moveDown(id, t, bound-1);
@@ -168,7 +156,7 @@ int startSet(short id, Enum set){
                             printf("%d:ERRO (Jump Sib) Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
                             return 1;
                         }
-                    }
+                    }                  
                     t--;
                     j++;
                 }
@@ -202,23 +190,9 @@ int startSet(short id, Enum set){
                     t--;
                 }
             }
-        
-        } else if (set->type == 4){
-
-            cT[id][set->level] = set->cT;
-            cT[id][set->level+1] = set->cT2;
-            memcpy(&uT[id][set->level], set->vec, (bound-set->level+1)*sizeof(short));
-           /* printf("uT:");
-            for(int i=0; i<(bound- set->level); i++)
-                printf("%d ",set->vec[i]);
-            printf("\n");
-            */free(set->vec);
-            
         }
-    
     return 0;
 }
-
 
 
 Enum newEnumElem(short bound, short sibling, short type, short level, short *vec){
@@ -237,80 +211,34 @@ Enum newEnumElem(short bound, short sibling, short type, short level, short *vec
     return st;
 }
 
-Enum newEnumElemV2(short bound, short level, short type, short *vec, double cT, double cT2){
-    Enum st = (Enum)_mm_malloc(sizeof(NEnum),64);
-    st->next = NULL;
-    
-    st->bound = bound;
-    st->type = type;
-    st->level = level;
-    st->cT=cT;
-    st->cT2=cT2;
-    
-    st->vec = (short*)_mm_malloc((bound-level+1)*sizeof(short),64);
-    memcpy(st->vec, vec, (bound-level+1)*sizeof(short));
-    
-   /* printf("uT:");
-    for(int i=0; i<(bound-level+1); i++)
-        printf("%d ",vec[i]);
-    printf("\n");
-    */
-    return st;
-}
-
-void addTail(LEnum l, Enum newSet){
-    //Lock critical zone
-    pthread_mutex_lock(&toHead_Mutex);
-    
-    if(l->count != 0){
-        l->tail->next=newSet;
-        l->tail = newSet;
-        l->count++;
+void addTail(Enum newSet){
+    if(list->count != 0){
+        list->tail->next=newSet;
+        list->tail = newSet;
+        list->count++;
     }else{
-        l->head = l->tail = newSet;
-        l->count=1;
+        list->head = list->tail = newSet;
+        list->count=1;
     }
-    
-    //Lock critical zone
-    pthread_mutex_unlock(&toHead_Mutex);
 }
 
-void addHead(LEnum l, Enum newSet){
-    
-    //Lock critical zone
-    pthread_mutex_lock(&toHead_Mutex);
-    
-    if(l->count != 0){
-        newSet->next=l->head;
-        l->head = newSet;
-        l->count++;
-        
-    }else{
-        l->head = l->tail = newSet;
-        l->count=1;
-    }
-    
-    //Unlock critical zone
-    pthread_mutex_unlock(&toHead_Mutex);
-}
-
-Enum pop(LEnum l){
+Enum pop(){
     Enum aux;
     
     //Lock critical zone
-    pthread_mutex_lock(&toHead_Mutex);
+    pthread_mutex_lock(&toPop_Mutex);
     
-    if(!l->head){
-        pthread_mutex_unlock(&toHead_Mutex);
+    if(!list->head){
+        pthread_mutex_unlock(&toPop_Mutex);
         return NULL;
     }
         
-    aux = l->head;
-    l->head = l->head->next;
-    l->count--;
+    aux = list->head;
+    list->head = list->head->next;
+    list->count--;
     
     //Unlock critical zone
-    pthread_mutex_unlock(&toHead_Mutex);
+    pthread_mutex_unlock(&toPop_Mutex);
  
     return aux;
 }
@@ -327,12 +255,14 @@ void EnumSET(Enum set, short id){
     
     if(startSet(id, set))
         return;
-
-    //printVec(dim,id);
+  //  printVec(dim, id);
+    printf("Original Vec\n");
+    printVec(dim,id);
     //Start on leaf (like Schnorr)
     if(set->type==0){
         s = t = 0;
-        cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
+        aux = y[id][t] + uT[id][t];
+        cT[id][t] = cT[id][t + 1] + (aux * aux) * B[t];
 
     //One Gamma
     } else if(set->type == 1){
@@ -350,19 +280,24 @@ void EnumSET(Enum set, short id){
         bound = bound - set->level-1;
         moveDown(id, bound, s);
         t=bound;
-        
     } else if(set->type == 4){
-       
-        s = set->bound;
-        t = bound = set->level;
-        delta[id][t] = uT[id][t];
-        //cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
+        s = bound;
+        bool finished = false;
+        short i;
+        for(i=set->level-2; i>=0 && !finished; i--){
+            if(set->vec[i]==2){
+                bound++;
+            }else{          
+                finished = true;
+            }                
+        }
+	if(set->vec[0]==2&&!finished){bound++;}
+	bound -= set->level;
+        t=bound;
     }
-
-    
+    printf("id: %d | bound = %d, type = %d, sibling = %d\n", id, set->bound, set->type, set->sibling);
     
     while(t <= bound){
-      // printVec(dim, id);
         if (cT[id][t] < cL){
             if (t > 0){
                 //moveDown
@@ -385,12 +320,14 @@ void EnumSET(Enum set, short id){
                 }
                 
                 //Prepare cT[t] to next iteration
-                cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
+                aux = y[id][t] + uT[id][t];
+                cT[id][t] = cT[id][t + 1] + (aux * aux) * B[t];
                 
             }
             else{
                 //UpdateVector
                 printf("%d:UPDATE Type:%d, Sib:%d, Level:%d -->%f / %f\n",s+1, set->type,set->sibling, set->level ,cT[id][0],cL);
+                
                 
                 //Lock critical zone
                 pthread_mutex_lock(&u_Mutex);
@@ -417,89 +354,8 @@ void EnumSET(Enum set, short id){
             uT[id][t] = v[id][t] + delta[id][t];
             
             //Prepare cT[t] to next iteration
-            cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
-            
-        }
-    }
-   // printf("%dEND Type:%d, Sib:%d, Level:%d\n",s+1, set->type,set->sibling, set->level);
-}
-
-void EnumCreatTasks(Enum set, short id, short depth){
-    
-    double aux;
-    short i, s, t, bound;
-    
-    //Always in type 1 -- One Gamma
-    s = t = bound = set->bound;
-    startSet(id, set);
-
-    while(t <= bound){
-        
-        if (cT[id][t] < cL){
-            //moveDown
-            t--;
-            aux = 0.0;
-            
-            for (i = t + 1; i <= s; i++){
-                aux += uT[id][i] * mu[i][t];
-            }
-            
-            y[id][t] = aux;
-            uT[id][t] = v[id][t] = short(round(-aux));
-            delta[id][t] = 0;
-            
-            if (uT[id][t] > -aux){
-                d[id][t] = -1;
-            }
-            else{
-                d[id][t] = 1;
-            }
-            
-            //Prepare cT[t] to next iteration
-            cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
-            
-            if (t == depth-1){
-                
-
-                if(uT[id][bound]==2) return;
-
-                Enum st = newEnumElemV2(bound, t, 4, &uT[id][t], cT[id][t], cT[id][t+1]);
-
-                if(uT[id][bound-1]==0  ||  s>dim-3){
-                    addHead(list_Urgent, st);}
-                else addHead(list, st);
-                
-                //moveUp
-                t++;
-                if(t < s){
-                    delta[id][t] = -delta[id][t];
-                }
-                if(delta[id][t]*d[id][t] >= 0){
-                    delta[id][t] += d[id][t];
-                }
-                uT[id][t] = v[id][t] + delta[id][t];
-                
-                //Prepare cT[t] to next iteration
-                cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
-                
-
-            }
-        }
-        else{
-            //moveUp
-            t++;
-            s = (s<t)?t:s; //Get max value
-            
-            if(t < s){
-                delta[id][t] = -delta[id][t];
-            }
-            if(delta[id][t]*d[id][t] >= 0){
-                delta[id][t] += d[id][t];
-            }
-            uT[id][t] = v[id][t] + delta[id][t];
-            
-            //Prepare cT[t] to next iteration
-            cT[id][t] = cT[id][t + 1] + (y[id][t]*y[id][t] + 2*uT[id][t]*y[id][t] + uT[id][t]*uT[id][t]) * B[t];
+            aux = y[id][t] + uT[id][t];
+            cT[id][t] = cT[id][t + 1] + (aux * aux) * B[t];
             
         }
     }
@@ -511,11 +367,10 @@ void* threadHander(void* vID){
     Enum set = NULL;
 
     while (list->count>0) {
-        if(!(set = pop(list_Urgent)))
-            set = pop(list);
-        
-        if(set)
+        set = pop();
+        if(set){
             EnumSET(set, id);
+        }
     }
 
     return NULL;
@@ -571,72 +426,95 @@ void freeVectors(short vecs){
     free(vectors);
 }
 
-void creatTasks(short bound, short level){
-	short i, j;
-	//short depth = bound - level;
+//From vector '0 0 0 0 0'
+void creatTasks(short bound, short level, short totvec){
+    short i;
+    //short depth = bound - level;
     Enum set = NULL;
     
+    for(i=0; i<totvec; i++){
+        set = newEnumElem(bound, 0, 3, level+1, vectors[i]);
+        addTail(set);
+        set = newEnumElem(bound, 1, 3, level+1, vectors[i]);
+        addTail(set);
+        set = newEnumElem(bound, -1, 3, level+1, vectors[i]);
+        addTail(set);
+        if(vectors[i][level-1]==2){
+            set = newEnumElem(bound, 2, 4, level+1, vectors[i]);
+            addTail(set);
+        }else{
+            set = newEnumElem(bound, 2, 2, level+1, vectors[i]);
+            addTail(set);
+        }
+    }
+
+//    for(i=1; i<=level; i++){
+//
+//        set = newEnumElem(bound, 1, 3, i, NULL);
+//        addTail(set);
+//        set = newEnumElem(bound, -1, 3, i, NULL);
+//        addTail(set);
+//        set = newEnumElem(bound, 2, 2, i, NULL);
+//        addTail(set);
+//    }
+//    set = newEnumElem(bound, 0, 2, i, NULL);
+//    addTail(set);
 }
 
 //OLD FUNCTION
 //short* ENUM(){
     
-
-    short i, n = 1, creatRange = dim - 5, MAX_DEPTH = 0.7*dim, divRange = 0.8*creatRange;
-
+//NEW FUNCTION WITH INPUTS
+short* ENUM(short creatRange, short divRange, short MAX_DEPTH, short veclength){
+    short i, j, n = 1;
+    //short i, j, n = 1, creatRange = dim - nthreads, MAX_DEPTH = 0.4*dim, divRange = 0.6*dim, veclength;
     Enum set = NULL;
     short  totvec;
     
+    totvec = createVectors(veclength);
+    
+    for (i = dim; i > creatRange && i>0; i--){
+            creatTasks(i, veclength, totvec);
+    }
     
     freeVectors(totvec);
     
     for(i=creatRange; i>divRange && i>0; i--){
         set = newEnumElem(i, 0, 3, 1, NULL);
-        addTail(list_Urgent, set);
-        n++;
+        addTail(set);
+	n++;
         set = newEnumElem(i, 1, 3, 1, NULL);
-        addTail(list, set);
+        addTail(set);
         n++;
         set = newEnumElem(i, -1, 3, 1, NULL);
-        addTail(list, set);
+        addTail(set);
         n++;
         set = newEnumElem(i, 2, 2, 1, NULL);
-        addTail(list, set);
+        addTail(set);
         n++;
     }
     
-
-    for(; i>MAX_DEPTH; i--){
-        set = newEnumElem(i, 1, 1, 1, NULL);
-        addTail(list, set);
-        n++;
-    }
     
     //Prepare list with tasks
-    set = newEnumElem(MAX_DEPTH, 1, 0, 1, NULL);
-    addTail(list, set);
-
+    for(; i>MAX_DEPTH && i>0; i--){
+        set = newEnumElem(i, 1, 1, 1, NULL);
+        addTail(set);
+        n++;
+    }
+    if(i>0)set = newEnumElem(i, 1, 0, 1, NULL);
+    addTail(set);
+    
+    printf("Total divisions: %d\n", list->count);
+    
+    pthread_t tHandles[nthreads];
     
     //Threads Start
-    pthread_t tHandles[nthreads];
-
-    for (i=1; i<nthreads ; i++) {
+    for (i = 0; i < nthreads; i++) {
         short *threadNum = (short*)malloc(sizeof (short));
         *threadNum = i;
         pthread_create(&tHandles[i], NULL, threadHander, (void *)threadNum);
+
     }
-    
-    //more tasks
-    for (i = dim; i>creatRange ; i--){
-        set = newEnumElem(i, 1, 1, 1, NULL);
-        EnumCreatTasks(set, 0, i-5);
-    }
-    
-    short *threadNum = (short*)malloc(sizeof (short));
-    *threadNum = 0;
-    pthread_create(&tHandles[0], NULL, threadHander, (void *)threadNum);
-    
-    
     
     //Threads Join
     for (i = 0; i < nthreads; i++)

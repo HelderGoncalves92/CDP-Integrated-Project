@@ -15,19 +15,19 @@
 
 #include <iostream>
 #include <fstream>
+#include <time.h>
 #include <omp.h>
-
 
 #include "BKZ.h"
 
 #define NUM_EVENTS 2
 
 using namespace std;
-short dim;
+int dim;
 double **mu;
 double *B;
 
-void computeNewVector(long* dst_vec, short* src_vec ,long** base){
+void computeNewVector(long* dst_vec, int* src_vec ,long** base){
     int i,l;
     
     for (i = 0; i < dim; i++){
@@ -65,18 +65,7 @@ void check_equals(int* vec, int* ntl, int rows){
 } 
 
 int main(int argc, const char * argv[]) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
     
->>>>>>> version-map-reduce
-=======
-    int nTh = 1;
-   if(argc>=3)
-	nTh = atoi(argv[2]);
-
->>>>>>> parallelV1
     NTL::mat_ZZ BB;
     std::ifstream input_file(argv[1]);
     
@@ -108,40 +97,19 @@ int main(int argc, const char * argv[]) {
     //Init all Structs (Vectors an Matrix)
     long* fvec = (long*)calloc(cols ,sizeof(long));
     initStructsLLL(cols);
+    initENUM();
     
     //Compute all Coefficients and Norms accordingly the basis
     computeGSO(BB_);
-<<<<<<< HEAD
-
-    double time = omp_get_wtime();
     
-    int* vec = ENUM(0, dim-1);
-    
-    time = omp_get_wtime() -time;
-=======
-    
-    initEnum(nTh);
 
     double time = omp_get_wtime();
     //#pragma pomp inst begin(enum)
     
-    if(argc!=7){
-	printf("USAGE: basefile nthreads creatRange divRange MAX_DEPTH veclength\n");
-    	return 0;
-    }	
-    short creatRange = (short)atoi(argv[3]);
-    short divRange = (short)atoi(argv[4]);
-    short MAX_DEPTH = (short)atoi(argv[5]);
-    short veclength = (short)atoi(argv[6]);
-    short* vec = ENUM(creatRange,divRange,MAX_DEPTH,veclength);	
-    
-    //int* vec = EnumSET(ll->head);
-    //short* vec = ENUM();
-    
+    int* vec = ENUM(0, dim-1);
     
     //#pragma pomp inst end(enum)
     time = omp_get_wtime() - time;
->>>>>>> version-map-reduce
     
     //Compute SVP with ENUM vector
     computeNewVector(fvec, vec, BB_);
@@ -160,10 +128,6 @@ int main(int argc, const char * argv[]) {
     cout << "\n******* NORM *******" << endl;
     cout << norm;
     cout  << endl;
-<<<<<<< HEAD
-    
-=======
->>>>>>> version-map-reduce
     cout << "Time: " << time << endl;
     return 0;
 }
