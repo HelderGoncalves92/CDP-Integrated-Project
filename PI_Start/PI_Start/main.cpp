@@ -65,7 +65,11 @@ void check_equals(int* vec, int* ntl, int rows){
 } 
 
 int main(int argc, const char * argv[]) {
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> version-map-reduce
     NTL::mat_ZZ BB;
     std::ifstream input_file(argv[1]);
     
@@ -101,12 +105,24 @@ int main(int argc, const char * argv[]) {
     
     //Compute all Coefficients and Norms accordingly the basis
     computeGSO(BB_);
+<<<<<<< HEAD
 
     double time = omp_get_wtime();
     
     int* vec = ENUM(0, dim-1);
     
     time = omp_get_wtime() -time;
+=======
+    
+
+    double time = omp_get_wtime();
+    //#pragma pomp inst begin(enum)
+    
+    int* vec = ENUM(0, dim-1);
+    
+    //#pragma pomp inst end(enum)
+    time = omp_get_wtime() - time;
+>>>>>>> version-map-reduce
     
     //Compute SVP with ENUM vector
     computeNewVector(fvec, vec, BB_);
@@ -125,7 +141,10 @@ int main(int argc, const char * argv[]) {
     cout << "\n******* NORM *******" << endl;
     cout << norm;
     cout  << endl;
+<<<<<<< HEAD
     
+=======
+>>>>>>> version-map-reduce
     cout << "Time: " << time << endl;
     return 0;
 }
