@@ -9,7 +9,7 @@
 
 
 short nthreads;
-short *u, **uT, **d, **delta, **v;
+short *u, **uT, **d, **delta, **v, **vectors;
 double **cT, **y, cL;
 LEnum list = NULL;
 LEnum list_Urgent = NULL;
@@ -152,32 +152,27 @@ int startSet(short id, Enum set){
             short t=bound-2;
             //printVec(dim, id);
             if(set->vec != NULL){
-                printf("My bound: %d, sibling: %d\n",t, set->sibling);
-                set->vec[3] = set->sibling;
-                printf("VECTOR: 0: %d, 1: %d, 2: %d, 3: %d\n",set->vec[0], set->vec[1], set->vec[2], set->vec[3]);
+//                printf("My bound: %d, sibling: %d\n",t, set->sibling);
+		set->vec[set->level-1] = set->sibling;
+//                printf("VECTOR: 0: %d, 1: %d, 2: %d, 3: %d\n",set->vec[0], set->vec[1], set->vec[2], set->vec[3]);
                 short j=0;
                 while(t>=(bound-set->level-1)){
                     moveDown(id, t, bound-1);
-                    
                     if(cT[id][t] > cL){
                         printf("%d:Lower cL |Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
                         return 1;
-                    }
-                        
-                    while(uT[id][t] != set->vec[j]){
-                        
+                    }                        
+                    while(uT[id][t] != set->vec[j]){                        
                         moveUP(id, t, bound-1);
                         if(abs(uT[id][t]) > abs(set->vec[j])){
                             printf("%d:ERRO (Jump Sib) Type:%d, Sib:%d, Level:%d\n",bound, set->type,set->sibling, set->level);
                             return 1;
                         }
                     }
-                    
                     t--;
                     j++;
                 }
-            }else{
-            
+            }else{            
                 while(t>=(bound-set->level-1)){
                     moveDown(id, t, bound-1);
                     
@@ -325,9 +320,9 @@ Enum pop(LEnum l){
 void EnumSET(Enum set, short id){
     
     double aux;
-	short s, t;
-	short i;
-	short bound = set->bound;
+    short s, t;
+    short i;
+    short bound = set->bound;
     short toCopy = bound + 1;
     
     if(startSet(id, set))
@@ -474,17 +469,6 @@ void EnumCreatTasks(Enum set, short id, short depth){
                     addHead(list_Urgent, st);}
                 else addHead(list, st);
                 
-/*                if(s>dim-3){
-                    if(uT[id][bound-1]==0)
-                        addHead(list_Urgent, st);
-                    else
-                        addTail(list_Urgent, st);
-                    
-                } else if(uT[id][bound-1]==0)
-                    addTail(list_Urgent, st);
-                else
-                    addHead(list, st);
-  */
                 //moveUp
                 t++;
                 if(t < s){
@@ -537,36 +521,76 @@ void* threadHander(void* vID){
     return NULL;
 }
 
+short createVectors(short veclen){
+    short totvec = pow(4,veclen), i, j;
+    bool comp=false;
+    vectors = (short**)_mm_malloc(totvec*sizeof(short*),64);
+    short* sigvec = (short*)_mm_malloc(veclen*sizeof(short),64);
+    short* auxvec = (short*)_mm_malloc((veclen+1)*sizeof(short),64);
+    
+    for(i=0; i<=veclen; i++){
+        sigvec[i] = -1;
+        auxvec[i] = 0;
+    }
+    for(i=0; i<totvec; i++){
+        comp=false;
+        vectors[i] = (short*)_mm_malloc((veclen+1)*sizeof(short),64);
+        memcpy(&vectors[i][0],auxvec,(veclen+1)*sizeof(short));
+        for(j=veclen-1; j>=0 && !comp; j--){
+            if(auxvec[j]!=2){comp=true;}
+            if(sigvec[j]==-1){
+                auxvec[j] = sigvec[j]*auxvec[j]+1;
+            }else{
+                if(auxvec[j]==1){
+                    auxvec[j]=-1;
+                }else{
+                    auxvec[j]=0;
+                }
+            }
+            sigvec[j] *= -1;
+        }
+    }
+    free(auxvec);
+    free(sigvec);
+    
+//    printf("printing vectors\n");
+//    for(i=0; i<totvec; i++){
+//        for(j=0; j<=veclen; j++){
+//            printf("%d - %d\t",j,vectors[i][j]);
+//        }
+//        printf("\n");
+//    }
+    return totvec;
+}
+
+void freeVectors(short vecs){
+    short i;
+    for (i=0; i< vecs; i++){
+        free(vectors[i]);
+    }
+    free(vectors);
+}
 
 void creatTasks(short bound, short level){
 	short i, j;
 	//short depth = bound - level;
     Enum set = NULL;
-    bool finished = false;
-    short* vec = (short*)_mm_malloc(4*sizeof(short), 64);
     
-    
-//    for(i=1; i<=level; i++){
-//
-//        set = newEnumElem(bound, 1, 3, i, NULL);
-//        addTail(set);
-//        set = newEnumElem(bound, -1, 3, i, NULL);
-//        addTail(set);
-//        set = newEnumElem(bound, 2, 2, i, NULL);
-//        addTail(set);
-//    }
-//    set = newEnumElem(bound, 0, 2, i, NULL);
-//    addTail(set);
 }
 
+//OLD FUNCTION
+//short* ENUM(){
+    
 
-short* ENUM(){
-    
     short i, n = 1, creatRange = dim - 5, MAX_DEPTH = 0.7*dim, divRange = 0.8*creatRange;
+
     Enum set = NULL;
+    short  totvec;
     
     
-    for(i=creatRange; i>divRange; i--){
+    freeVectors(totvec);
+    
+    for(i=creatRange; i>divRange && i>0; i--){
         set = newEnumElem(i, 0, 3, 1, NULL);
         addTail(list_Urgent, set);
         n++;
@@ -581,6 +605,7 @@ short* ENUM(){
         n++;
     }
     
+
     for(; i>MAX_DEPTH; i--){
         set = newEnumElem(i, 1, 1, 1, NULL);
         addTail(list, set);
