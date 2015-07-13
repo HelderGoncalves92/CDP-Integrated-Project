@@ -17,7 +17,6 @@
 #include <fstream>
 #include <time.h>
 #include <omp.h>
-//#include <papi.h>
 
 #include "BKZ.h"
 
@@ -66,18 +65,7 @@ void check_equals(int* vec, int* ntl, int rows){
 } 
 
 int main(int argc, const char * argv[]) {
-    
-    
-   /* int aux, Events[]={PAPI_L3_TCW,PAPI_L3_TCM};
-    long long values[NUM_EVENTS];
-    clock_t inicio,fim;
-    float totT=0.0;
-    
-    float real_time, proc_time, mflops;
-    long long flpops;
-    float ireal_time, iproc_time, imflops;
-    long long iflpops;
-    */
+
     NTL::mat_ZZ BB;
     std::ifstream input_file(argv[1]);
     
@@ -113,24 +101,12 @@ int main(int argc, const char * argv[]) {
     
     //Compute all Coefficients and Norms accordingly the basis
     computeGSO(BB_);
-    
-    
-    /*
-    if(PAPI_start_counters(Events,NUM_EVENTS) != PAPI_OK) printf("Nao tem contadores papi\n");
-    inicio=clock();
-    if(PAPI_read_counters(values,NUM_EVENTS) != PAPI_OK) printf("Erro ao ler evento\n");
-    */
+
+    double time = omp_get_wtime();
     
     int* vec = ENUM(0, dim-1);
     
-    /*
-    fim=clock();
-    printf("Tempo de multiplicacao: %f\n",(float)((fim-inicio)/CLOCKS_PER_SEC));
-    if(PAPI_stop_counters(values,NUM_EVENTS) != PAPI_OK) printf("Erro ao parar evento\n");
-    
-    printf("\n---Valores PAPI---\n");
-    printf("L3_TCW: %lld;\nL3_TCM: %lld;\n",values[0],values[1]);
-    */
+    time = omp_get_wtime() -time;
     
     //Compute SVP with ENUM vector
     computeNewVector(fvec, vec, BB_);
@@ -149,5 +125,7 @@ int main(int argc, const char * argv[]) {
     cout << "\n******* NORM *******" << endl;
     cout << norm;
     cout  << endl;
+    
+    cout << "Time: " << time << endl;
     return 0;
 }

@@ -6,20 +6,19 @@
 #include <stdio.h>
 
 double *cT, *y, *auxY;
-int *u, *uT, *d, *delta, *v, *auxUT;
+int *u, *uT, *d, *delta, *v;
 
 void initENUM(){
+    int dimention = dim + 1;
     //Alocate memory for every vector
-    cT = (double*)_mm_malloc((dim+1) * sizeof(double), 64);
-    y = (double*)_mm_malloc((dim+1) * sizeof(double), 64);
-    auxY = (double*)_mm_malloc((dim+1) * sizeof(double), 64);
-    v = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
-    delta = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
-    d = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
-    u = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
-    uT = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
-    auxUT = (int*)_mm_malloc((dim+1) * sizeof(int), 64);
-
+    cT =   (double*)_mm_malloc(dimention * sizeof(double), 64);
+    y =    (double*)_mm_malloc(dimention * sizeof(double), 64);
+    auxY = (double*)_mm_malloc(dimention * sizeof(double), 64);
+    v =     (int*)_mm_malloc(dimention * sizeof(int), 64);
+    delta = (int*)_mm_malloc(dimention * sizeof(int), 64);
+    d =     (int*)_mm_malloc(dimention * sizeof(int), 64);
+    u =     (int*)_mm_malloc(dimention * sizeof(int), 64);
+    uT =    (int*)_mm_malloc(dimention * sizeof(int), 64);
 }
 
 
@@ -32,18 +31,16 @@ int* ENUM(int ini, int fim){
     
     //Init all vectors
 	cL = B[ini];
-	d[ini] = u[ini] = uT[ini] = auxUT[ini] = 1;
+	d[ini] = u[ini] = uT[ini] = 1;
 	y[ini] = delta[ini] = v[ini] = auxY[ini]= 0;
 
 	for(i = ini + 1; i <= fim+1; i++){
-		cT[i] = u[i] = uT[i] = y[i] = delta[i] = v[i] = auxUT[i] = auxY[i] = 0;
+		cT[i] = u[i] = uT[i] = y[i] = delta[i] = v[i] = auxY[i] = 0;
 		d[i] = 1;
     }
     
     auxY[t] = y[t]*y[t];
-    auxUT[t] = uT[t]*uT[t];
-    cT[t] = cT[t + 1] + (auxY[t] - 2*uT[t]*y[t] + auxUT[t]) * B[t];
-    
+    cT[t] = cT[t + 1] + (auxY[t] + 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
     
 	while(t <= fim){
 
@@ -60,7 +57,7 @@ int* ENUM(int ini, int fim){
 				uT[t] = v[t] = int(round(-aux));
                 delta[t] = 0;
                 
-				if (uT[t] > -y[t]){
+				if (uT[t] > -aux){
 					d[t] = -1;
 				}
 				else{
@@ -69,8 +66,7 @@ int* ENUM(int ini, int fim){
                 
                 //Prepare cT[t] to next iteration
                 auxY[t] = y[t]*y[t];
-                auxUT[t] = uT[t]*uT[t];
-                cT[t] = cT[t + 1] + (auxY[t] - 2*uT[t]*y[t] + auxUT[t]) * B[t];
+                cT[t] = cT[t + 1] + (auxY[t] + 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
                 
 			}
 			else{
@@ -91,12 +87,10 @@ int* ENUM(int ini, int fim){
 			uT[t] = v[t] + delta[t];
             
             //Prepare cT[t] to next iteration
-            auxUT[t] = uT[t]*uT[t];
-            cT[t] = cT[t + 1] + (auxY[t] - 2*uT[t]*y[t] + auxUT[t]) * B[t];
+            cT[t] = cT[t + 1] + (auxY[t] + 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
             
 		}
 	}
 	return u;
 }
 
-//cT[t] = cT[t + 1] + (y[t]*y[t] - 2*uT[t]*y[t] + uT[t]*uT[t]) * B[t];
