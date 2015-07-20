@@ -35,14 +35,14 @@
 % author names and affiliations
 % use a multiple column layout for up to three different
 % affiliations
-\author{\IEEEauthorblockN{Authors:\\Hélder Gonçalves\\heldergoncalves92@gmail.com\\
-and João Magalhães\\jpfmm123@gmail.com}
+\author{\IEEEauthorblockN{Helder Goncalves\\heldergoncalves92@gmail.com\\
+and Joao Magalhaes\\jpfmm123@gmail.com}
 %\IEEEauthorblockA{University of Minho}
 \and
-\IEEEauthorblockN{Co-Advisor:\\Artur Mariano}
+\IEEEauthorblockN{Artur Mariano}
 \IEEEauthorblockA{Technical University of Darmstadt\\artur.mariano@sc.tu-darmstadt.de}
 \and
-\IEEEauthorblockN{Advisor:\\Alberto Proença}
+\IEEEauthorblockN{Alberto Proenca}
 \IEEEauthorblockA{University of Minho\\aproenca@di.uminho.pt}
 }
 
@@ -59,10 +59,9 @@ and João Magalhães\\jpfmm123@gmail.com}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-
-    Lattice-based cryptography methods is well known primitive from the asymmetric cryptographic primitives set. Although widely studied for decades they have gained new notoriety in the last years because it is believe in the field of cryptography that these methods can withstand attacks by upcoming quantum computers.
-    Experimental testing of the algorithms properties may shed some light on its vulnerability. However the experimental results must be obtained  within reasonable time envelops, which implies efficient parallel implementations of the Enumeration algorithm able to tackle not only conventional architectures such as \emph{Intel X86}.
-    In this paper we describe our implementation approach of the Enumeration algorithm on \emph{Pthreads}. As the results section shows we were able to obtain significant performance improvements over the said implementation.
+    Lattice-based cryptography methods is well known primitive  from  the  asymmetric  cryptographic  primitives  set.  Although widely studied for decades they have gained new notoriety in the last years because it is believe in the field of cryptography that these methods can withstand attacks by upcoming quantum computers.
+    
+    This paper describes how we optimized the Enumeration algorithm's serial code and then parallelized it using \emph{PThreads}. The results are shown in the results section being very promising and showing that we can obtain significant performance improvements over the said implementation.
     
 \end{abstract}
 
@@ -96,11 +95,14 @@ Lattice, SVP, Enumeration, Parallelization, Pthreads.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
+   Lattice-based cryptography methods is well known primitive from the asymmetric cryptographic primitives set. Although widely studied for decades they have gained new notoriety in the last years because it is believe in the field of cryptography that these methods can withstand attacks by upcoming quantum computers.
     A lattice in $R^n$ is a discrete subgroup of $R^n$ which span a real vector space $R^n$. Every lattice in $R^n$ can be generated from a basis for the vector space by forming all linear combinations with integer coefficients. A lattice may be viewed as a regular tiling of a space by a primitive cell. 
 
 	Lattices can be applied in many contexts but it has gained importance in cryptography due to advent of quantum computing. The known public key cryptography is easily attacked by this new generation of computers. In contrast, the lattice-based cryptography is believed to be resistant to attacks from quantum computers. In cryptography NP-hard algorithms are especially attractive due to their exponential time complexity. New cryptographic approaches can be reduced to the shortest vector problem (SVP) which is known to be NP-hard making it a prime candidate to develop said approaches. 
 	
     A given basis $\Lambda$ constituted by a set of totally independent linear vectors. Although a lattice can be an unbounded set  of vectors, in this paper we only consider square basis, i. e. the set size is bound by the number of basis vector such that each vector corresponds to a dimension.
+    
+    Experimental testing of the algorithms properties may shed some light on its vulnerability. However the experimental results must be obtained  within reasonable time envelops, which implies efficient parallel implementations of the Enumeration algorithm able to tackle not only conventional architectures such as \emph{Intel X86}.
 
     In order to increase the development performance, ensure reliability and fulfill time constrains we resort to the external library NTL. NTL encapsulates decades of performance tuning by others and provides reliability assurances that could only by achieved at the expense of large amounts of development time.
     
@@ -112,6 +114,7 @@ Lattice, SVP, Enumeration, Parallelization, Pthreads.
     
     As the results actual chooses the two step described in this paper allowed us to achieved linear and/or even super-linear speedups in some cases.
   
+   Section I is the introduction to the problem. In section II has the strategy used to tackle the problem. Section III is about the optimization of the sequential version of the enumeration algorithm. Section IV is about the parallelization of the enumeration algorithm. Section V is where the results of the parallelization are shown. Section VI briefly talks about the problems of adapting the code to \emph{CUDA} and \emph{MIC}. Sections VII and VIII are the future work and the conclusion of our work.
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -517,7 +520,7 @@ The main problem we had in this project was understanding how the code works. Th
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section*{Acknowledgments}
 We would like to thank our advisors for all the help they gave us and for always being available for all the questions we had. 
-We would also like to thank Fábio Correia for all the help he gave us in understanding how the code works and what problems with the optimizaion attack first since they were the most important. 
+We would also like to thank Fábio Correia for all the help he gave us in understanding how the code works and what problems with the optimization attack first since they were the most important. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
