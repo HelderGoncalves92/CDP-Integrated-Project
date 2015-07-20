@@ -59,9 +59,9 @@ and Joao Magalhaes\\jpfmm123@gmail.com}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-    Lattice-based cryptography methods is well known primitive  from  the  asymmetric  cryptographic  primitives  set.  Although widely studied for decades they have gained new notoriety in the last years because it is believe in the field of cryptography that these methods can withstand attacks by upcoming quantum computers.
+    Lattice-based cryptography methods are well known primitives from the  asymmetric cryptographic primitives set. Although widely studied for decades they have gained new notoriety in the last years because it is believe in the field of cryptography that these methods can withstand attacks by upcoming quantum computers.
     
-    This paper describes how we optimized the Enumeration algorithm's serial code and then parallelized it using \emph{PThreads}. The results are shown in the results section being very promising and showing that we can obtain significant performance improvements over the said implementation.
+    This paper describes how we optimized the Enumeration algorithm's serial code and then we suggest a new way to parallelize it using \emph{PThreads}. The results shown in the results section are very promising and show that we can obtain significant performance improvements over the said implementation.
     
 \end{abstract}
 
@@ -95,12 +95,12 @@ Lattice, SVP, Enumeration, Parallelization, Pthreads.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-   Lattice-based cryptography methods is well known primitive from the asymmetric cryptographic primitives set. Although widely studied for decades they have gained new notoriety in the last years because it is believe in the field of cryptography that these methods can withstand attacks by upcoming quantum computers.
-    A lattice in $R^n$ is a discrete subgroup of $R^n$ which span a real vector space $R^n$. Every lattice in $R^n$ can be generated from a basis for the vector space by forming all linear combinations with integer coefficients. A lattice may be viewed as a regular tiling of a space by a primitive cell. 
 
 	Lattices can be applied in many contexts but it has gained importance in cryptography due to advent of quantum computing. The known public key cryptography is easily attacked by this new generation of computers. In contrast, the lattice-based cryptography is believed to be resistant to attacks from quantum computers. In cryptography NP-hard algorithms are especially attractive due to their exponential time complexity. New cryptographic approaches can be reduced to the shortest vector problem (SVP) which is known to be NP-hard making it a prime candidate to develop said approaches. 
 	
-    A given basis $\Lambda$ constituted by a set of totally independent linear vectors. Although a lattice can be an unbounded set  of vectors, in this paper we only consider square basis, i. e. the set size is bound by the number of basis vector such that each vector corresponds to a dimension.
+	A lattice in $R^n$ is a discrete subgroup of $R^n$ which span a real vector space $R^n$. Every lattice in $R^n$ can be generated from a basis for the vector space by forming all linear combinations with integer coefficients. A lattice may be viewed as a regular tiling of a space by a primitive cell.
+	
+    A given basis $\Lambda$ is constituted by a set of totally independent linear vectors. Although a lattice can be an unbounded set  of vectors, in this paper we only consider square basis, i. e. the set size is bound by the number of basis vector such that each vector corresponds to a dimension.
     
     Experimental testing of the algorithms properties may shed some light on its vulnerability. However the experimental results must be obtained  within reasonable time envelops, which implies efficient parallel implementations of the Enumeration algorithm able to tackle not only conventional architectures such as \emph{Intel X86}.
 
@@ -111,8 +111,7 @@ Lattice, SVP, Enumeration, Parallelization, Pthreads.
     \emph{i)} optimization of the sequential code and its data structures\\
     \indent \emph{ii)}perform a guided parallel based on the results obtain on the previously state
     
-    
-    As the results actual chooses the two step described in this paper allowed us to achieved linear and/or even super-linear speedups in some cases.
+    By implementing the two step approach we were able to achieve linear and/or even super-linear speedups in some cases.
   
    Section I is the introduction to the problem. In section II has the strategy used to tackle the problem. Section III is about the optimization of the sequential version of the enumeration algorithm. Section IV is about the parallelization of the enumeration algorithm. Section V is where the results of the parallelization are shown. Section VI briefly talks about the problems of adapting the code to \emph{CUDA} and \emph{MIC}. Sections VII and VIII are the future work and the conclusion of our work.
  
@@ -160,7 +159,7 @@ Lattice, SVP, Enumeration, Parallelization, Pthreads.
 
     It is a method for orthonormalising a set of vectors in an inner product space, most commonly the Euclidean space $R^n$. The Gram–Schmidt process takes a finite, linearly independent set $S = {v1, ..., vk}$ for $k \leqslant n$ and generates an orthogonal set $S^\prime = {u1, ..., uk}$ that spans the same k-dimensional subspace of $R^n$ as $S$, i.e. as prime is the set of orthogonal basis vectors of the inner product space of $S$.
     
-    The $S$ prime set is stored as a triangular matrix $\mu$ and a vector containing the squared norms although this routine is a prime candidate for vectorization, since it is only executed once with a small time footprint over the entire overall execution time such an approach yields little benefit.
+    The $S^\prime$ set is stored as a triangular matrix $\mu$ and a vector containing the squared norms although this routine is a prime candidate for vectorization, since it is only executed once with a small time footprint over the entire overall execution time such an approach yields little benefit.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -247,13 +246,13 @@ The first one was the decomposition of the power function. The power function is
 (a + b)^2 = (a + b) \times (a + b)
 \end{equation}
 
-To solve this problem there are two possible solutions. The first one is slower than the second one. This happens because to compute the first solution it is necessary to compute at least 4 multiply operations and 2 sum operations. In contrast, to compute the second option just is necessary compute 1 sum operation and a multiply operation. This is possible because is done the sum to a local variable and then the value multiply itself. 
+To solve this problem there are two possible solutions. The first one is slower than the second one. This happens because to compute the first solution it is necessary to compute at least 4 multiply operations and 2 sum operations. In contrast, to compute the second option just is necessary compute 1 sum operation and a multiply operation. This is possible because the sum is done to a local variable and then the value multiply itself. 
 
 \subsubsection{Avoid Computation}
 A careful examination of the usage of $cT[t]$ revealed we could postpone its computation to the moment exactly prior to its use. 
 
 \subsubsection{Inline}
-As gprof reported, the functions \emph{moveUp} and \emph{moveDown} are constantly called which implies all the necessary operations such as stack creation, returning, ... To avoid function call overhead, both funcions were inlined which not only removes the call overhead but also increases the compiler opportunities for automatic optimization.
+As GPROF reported, the functions \emph{moveUp} and \emph{moveDown} are constantly called which implies all the necessary operations such as stack creation, returning, ... To avoid function call overhead, both funcions were inlined which not only removes the call overhead but also increases the compiler opportunities for automatic optimization.
 
     Now to try to increase the performance of the current algorithm, were tried greater depth implementations.
     
@@ -270,7 +269,7 @@ We tried to apply the Map-Reduce concept in this case by creating an array of va
 Unfortunately, the last dependency was very hard to turn around. Although the increase achieved on vectorization was a great advantage, it is lost on the second cycle when the sum was done.
     
 \subsection{Improvement Results}
-    Table III show us the results of tests made for a 55 basis dimension. After all the tests, the \emph{Inline} version has the best speed up. Despite attempts to advanced improvements, we could not achieve better results than the \emph{Inline}, for the reasons explained above.
+    Table III shows us the results of tests made for a 55 basis dimension. After all the tests, the \emph{Inline} version has the best speed up. Despite attempts to advanced improvements, we could not achieve better results than the \emph{Inline}, for the reasons explained above.
     
 \begin{table}[ht!]
 \centering
@@ -324,7 +323,7 @@ Operational Intensity             & 1257893,643                  \\ \hline
 \caption{Cache miss values for the inline version, dimension 55}
 \end{table}
     
-As we can see in Figure 2, we have a very low percentage of cache misses, with the maximum value being 0.72\% for the L2 instruction cache miss. The operational intensity is measured by the number of floating point operations per second divided by the number of bytes that was transferred by the memory. In this case we have more than 200 billion floating point operations and 199 seconds, so we have about 1 billion floating operations per second. Since we only have 14 times 64 bytes transferred from memory, we have an operational intensity of more than 1 million. This definitely means that we have a compute bound problem. 
+Figure 2 shows us that we have a very low percentage of cache misses, with the maximum value being 0.72\% for the L2 instruction cache miss. The operational intensity is measured by the number of floating point operations per second divided by the number of bytes that was transferred by the memory. In this case we have more than 200 billion floating point operations and 199 seconds, so we have about 1 billion floating operations per second. Since we only have 14 times 64 bytes transferred from memory, we have an operational intensity of more than 1 million. This definitely means that we have a compute bound problem. 
 Since we have a compute bound problem, we do not need to restructure the data to make it more memory friendly.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -336,12 +335,12 @@ Since we have a compute bound problem, we do not need to restructure the data to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Paralellization}
-The paralellization of the enumeration algorithm is very important, since it is possible to obtain linear, or even super linear speedups up to 20 threads, as can be seen in the results section. 
+\section{Parallelization}
+The enumeration algorithm has very good parallelization opportunities, being able to obtain linear or even super linear speedups up to 20 threads.
 To parallelize the algorithm, Pthreads was used since it has lower overhead thread creation than OpenMP.
 
-\subsection{Before paralellization - preparation of the code}
-To divide the enumeration algorithm, the code must be prepared for paralellization. For that a new structure was created, called Enum. This structure contains the following two short values:
+\subsection{Before parallelization - preparation of the code}
+To divide the enumeration algorithm, the code must be prepared for parallelization. For that a new structure was created, called \emph{Enum}. This structure contains the following two short values:
 
 \begin{itemize}
 \item bound - Responsible of telling the task in which dimension it must start and stop, not going further.
@@ -359,7 +358,7 @@ Finally, this structure also has a variable called type, that defines the behavi
 \item 4 - this type is like type 2 but, instead of running until its bound plus one, the dimension that the task stops running must be calculated (see subsection IV.D). Like type 2, this type only occurs for sibling 2.
 \end{itemize}
 
-A structure to handle all the Enum structures was created. This structure (called LEnum) is a linked list of Enum structures and its accessed by the threads when they are created or when they complete a task. When a thread requests a new task, that task is removed from LEnum. If no tasks are left in the linked list, then the thread will wait until all threads end their work to end the program.
+A structure to handle all the \emph{Enum} structures was created. This structure (called \emph{LEnum}) is a linked list of \emph{Enum} structures and its accessed by the threads when they are created or when they complete a task. When a thread requests a new task, that task is removed from \emph{LEnum}. If no tasks are left in the linked list, then the thread will wait until all threads end their work to end the program.
 
 
 \subsection{First attempt - Blindly divide the dimensions}
@@ -372,10 +371,10 @@ In the Figure 3, the divisions made for a lattice with dimension 50 and \emph{MA
 \caption{First parallelization division}
 \end{figure}
 
-As can be seen, there will be 16 total divisions. Each task is in charge of a given dimension and the task in charge of dimension 35 computes all the lower dimensions. It was done this way because lower dimensions have much less computation than bigger ones. 
+With this division there will be 16 total divisions. Each task is in charge of a given dimension and the task in charge of dimension 35 computes all the lower dimensions. It was done this way because lower dimensions have much less computation than bigger ones. 
 
 \subsection{Second attempt - Division by siblings}
-After testing the first paralellization attempt, it was discovered that the biggest dimensions would take a lot of time to compute and the code would become sequential at some point. For example, if for a lattice with 50 dimensions and even if the first task to be run was the one associated with dimension 50, it would be the last to finish making the program scale poorly.
+After testing the first parallelization attempt, it was discovered that the biggest dimensions would take a lot of time to compute and the code would become sequential at some point. For example, if for a lattice with 50 dimensions and even if the first task to be run was the one associated with dimension 50, it would be the last to finish making the program scale poorly.
 To improve the parallelization, it was decided to divide the biggest dimensions by siblings, limited by the variable \emph{divRange}. These siblings improve the performance of the program a lot, by further dividing the previous tasks into four each. The siblings  0, 1 and -1 behave the same way (type 3), but sibling 2 behaves in a special way (type 2), in  which the bound of the task is equal to the others plus one. The way it works is really simple, imagine if we had a previous task for dimension 50. If we use siblings, we are forcing the value associated with dimension 50 to be 1, and the value for dimension 49 is set with the value of the sibling. 
 
 \begin{figure}[ht!]
@@ -397,7 +396,7 @@ Figure 5 has a small example of vector generation for \emph{VectorLength} equal 
 \caption{Vector generation}
 \end{figure}
 
-For each of these vectors, there are four divisions, corresponding with the four siblings being used, as can be seen in Figure 6, for vector [1, 2, -1]:
+For each of these vectors, there are four divisions, corresponding with the four siblings being used. See Figure 6, for vector [1, 2, -1]:
 
 \begin{figure}[ht!]
 \centering
@@ -415,7 +414,7 @@ The difference of behaviour for type 4 can be shown in Figure 7.
 \caption{Variation of the bound with different vectors}
 \end{figure}
 
-As can be seen, the bound of type 4 is equal to the last position of the \emph{vec} array with value 2 (from right to left), except when all the values of the array are 2, in which case the bound is equal to the dimension. 
+The bound of type 4 is equal to the last position of the \emph{vec} array with value 2 (from right to left), except when all the values of the array are 2, in which case the bound is equal to the dimension. 
 
 After all types of divisions were defined, a combination of them was used to try to maximize the performance of the algorithm by improving the way the division is made. In Figure 8, the way divisions are defined and for what dimensions can be seen:
 
@@ -454,9 +453,9 @@ These numbers are not optimal, by far. We used them by trial and error for a spe
 
 In appendix A, the results for this test can be seen. Tests were made for seeds 0 and 15 for lattices with dimensions 50, 55, 58, 60 and 65. 
 
-With dimension 50 the speedups are constants and almost linear as it increases the number of threads what is good. On the next dimensions (55, 58 and 60) the parameters are almost perfect, especially on basis 55, having linear speedups. But are on basis 60 (seed 15) a super-linear speedup is achieved with 24 times best for 20 threads. However, the seed 0 speedup is worst. This difference between seeds is explained by the way how our implementation crosses the tree. The solution of the problem also can be on dimension 20 as can be on dimension 50. Now, if the final solution is found at the beginning of computation, the algorithm will have less sub-trees to visit than if it is found at the end, what will make it more slow.
+With dimension 50 the speedups are constants and almost linear as it increases the number of threads. On the next dimensions (55, 58 and 60) the parameters are almost perfect, especially on basis 55 that has linear speedups. But are on basis 60 (seed 15) a super-linear speedup is achieved with 24 times best for 20 threads. However, the seed 0 speedup is worst. This difference between seeds is explained by the way how our implementation crosses the tree. The solution has an equal probability of being at the beginning or end of the tree. Now, if the final solution is found at the beginning of computation, the algorithm will have less sub-trees to visit than if it is found at the end, what will make it more slow.
 
-As it was said earlier, the biggest problem of our implementation is that the numbers of divisions created are not optimal for each one of the different basis. This is clear for the speedup of base 65, specially for seed 0, that only improves for two threads as expected and after that the speedup is really bad. This happens because there are few divisions for the complexity of the computation of this dimension. A curious problem in the seed 0 was the fact of it actually takes more time to find the solution with 20 threads than it takes with 16. That happens because when it execute with 20 threads are created a bigger set of siblings with vectors and increase memory used what causes memory access issues. 
+The biggest problem of our implementation is that the numbers of divisions created are not optimal for each one of the different basis. This is clear for the speedup of base 65, specially for seed 0, that only improves for two threads as expected and after that the speedup is really bad. This happens because there are few divisions for the complexity of the computation of this dimension. A curious problem in the seed 0 was the fact of it actually takes more time to find the solution with 20 threads than it takes with 16. That happens because when it execute with 20 threads are created a bigger set of siblings with vectors and increase memory used what causes memory access issues. 
 
 The way that the parallelization is made, the speedup really depends of the seed that is used. This is because when there is a task that is created with the vector division, first it is checked if the combination of values is possible for that lattice and only then computed if the task can provide a better solution so, if there is a seed that has a lot of tasks that do not need to be computed, augmenting the number of tasks can have a lower impact on speed than in the case where there is a need compute much more tasks.
 
@@ -487,8 +486,7 @@ In the MIC case, the implementation would be really difficult since the parallel
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Future work}
-After the work that was done in our project, there is great opportunity to further improve the performance of the algorithm. 
-
+There is still room to greatly improve the parallelization of this algorithm. 
 For example, instead of the division by vectors being made just for the number of dimensions equal to the number of threads, there must be a mathematical formula that will optimize the time the algorithm takes to run by varying the number of dimensions divided by vectors. This is true not only for variable \emph{CreateRange} but also for variables \emph{DivRange}, \emph{MAX\_DEPTH} and even \emph{VectorLength}.
 
 Another way to further improve the algorithm is by applying a sieving optimization like extreme pruning to discard some of the branches, making the algorithm much faster. For that there was a need to resort to CUDA do compute the bounding function of the lattice and then compare the norm of each vector with the result of the bounded function instead of the current lowest vector norm.
@@ -505,9 +503,9 @@ Another way to further improve the algorithm is by applying a sieving optimizati
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
 In this project we managed to parallelize the enumeration algorithm in a way that linear or even super linear speedups can be achieved, specially in the case of base 60 seed 0 in which we had a speedup of 25 times for 20 threads.
-In spite of this results, a lot of work can be done to further improve the algorithm, as discussed in the future work section. 
+In spite of this results, a lot of work can be done to further improve the algorithm.
 
-The main problem we had in this project was understanding how the code works. This took a really long time and it was only managed to do it with help of our advisors. The way the auxiliary variables had to be created / altered to enable the parallelization was something that made us loose a lot of time too, since for every new division type, the way creation and assigning of values to the auxiliary variables was made changed.
+The main problem we had in this project was understanding how the code works. This took a really long time and it was only managed to do it with help of our advisors. The way the auxiliary variables had to be created / altered to enable the parallelization was something that made us lose a lot of time too, since for every new division type, the way creation and assigning of values to the auxiliary variables was made changed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
