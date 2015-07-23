@@ -5,6 +5,36 @@
 \usepackage{amssymb}
 \usepackage{hyperref}
 \usepackage{listings}
+\usepackage{color}
+\usepackage{caption}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{%
+  \parbox{\linewidth}{\colorbox{gray}{\parbox{\linewidth}{#1#2#3}}\vskip-1pt}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white}
+
+\lstset{frame=b,
+  language=C,
+  aboveskip=24mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  xrightmargin=-\fboxsep,
+  xleftmargin=2em,
+  framexleftmargin=1.7em,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
 
 \usepackage[utf8]{inputenc}
 \usepackage[portuguese, american]{babel}
@@ -196,11 +226,11 @@ If at any moment the algorithm reaches dimension 0, then a smaller vector exists
 To easily understand how the sequential version of the Enumeration algorithm works, we have a draft of our implementation in pseudo-code, based on Schnorr's work \cite{schnorr}.
 
 
-\begin{lstlisting}[frame=single,language=C]
+\begin{lstlisting}[caption=Enumeration Pseudo-Code]
 //Start by Initializing all the variables
 
 while( t <= End_Dimension ){
-    //Compute cT[i]
+    //Compute cT[t]
     if( cT[t] < current_Norm ){
         if( t > 0 )
             moveDown();
